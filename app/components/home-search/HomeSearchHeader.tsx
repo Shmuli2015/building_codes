@@ -17,9 +17,7 @@ export function HomeSearchHeader() {
         <motion.span
           aria-hidden
           className="flex text-blue-600"
-          animate={
-            reduceMotion ? undefined : { y: [0, -2, 0] }
-          }
+          animate={reduceMotion ? undefined : { y: [0, -2, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         >
           <MapPinIcon className="h-4 w-4 shrink-0" />

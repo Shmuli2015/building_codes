@@ -43,9 +43,7 @@ async function fetchFromGoogleSheets(): Promise<{
   if (!sheetId?.trim() || !jsonRaw?.trim()) {
     return {
       rows: SAMPLE_ROWS,
-      warnings: [
-        "מצב הדגמה — מוצגות שורות לדוגמה בלבד.",
-      ],
+      warnings: ["מצב הדגמה — מוצגות שורות לדוגמה בלבד."],
       source: "mock",
     };
   }

@@ -1,6 +1,7 @@
 ﻿import type { Metadata, Viewport } from "next";
 import { Heebo, Noto_Sans_Hebrew } from "next/font/google";
 
+import { ContactWhatsAppBanner } from "./components/ContactWhatsAppBanner";
 import "./globals.css";
 
 const noto = Noto_Sans_Hebrew({
@@ -69,10 +70,11 @@ export default function RootLayout({
       className={`${noto.variable} ${heebo.variable} h-full antialiased`}
     >
       <body className="flex min-h-dvh flex-col font-sans text-slate-900 selection:bg-blue-500/18 selection:text-slate-900">
+        <ContactWhatsAppBanner />
         <main className="flex min-h-[min(100dvh,max-content)] w-full flex-1 flex-col">
           {children}
         </main>
-        <footer className="mt-auto border-t border-slate-200/60 bg-[var(--surface-strong)]/88 px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] pt-6 text-center text-sm backdrop-blur-xl">
+        <footer className="mt-auto border-t border-slate-200/60 bg-(--surface-strong)/88 px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom,0))] pt-6 text-center text-sm backdrop-blur-xl">
           <p className="mx-auto mb-4 max-w-md text-xs leading-relaxed text-slate-500">
             השירות מיועד לשימוש חובשי רפואת חירום בלבד ואינו מיועד לשימוש מסחרי או
             פרטי.
