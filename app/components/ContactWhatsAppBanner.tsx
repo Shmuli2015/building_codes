@@ -14,18 +14,18 @@ export function ContactWhatsAppBanner() {
   return (
     <div
       role="region"
-      aria-label="הוספת קוד כניסה לבניין"
+      aria-label="יצירת קשר להוספת קוד כניסה לבניין"
       className="border-b border-emerald-600/15 bg-emerald-600/9 px-4 py-2.5 text-center text-sm text-slate-800 backdrop-blur-sm"
     >
       <p className="mx-auto max-w-2xl leading-relaxed">
-        מעוניינים למסור קוד כניסה עבור בניין?{" "}
+        להוספת או עדכון קוד כניסה לבניין —{" "}
         <a
           href={href}
           target="_blank"
           rel="noopener noreferrer"
           className="font-medium text-emerald-800 underline decoration-emerald-600/40 underline-offset-2 transition-colors hover:text-emerald-900 hover:decoration-emerald-700/60"
         >
-          שלחו הודעה בוואטסאפ
+          שלחו לנו הודעה בוואטסאפ
         </a>
       </p>
     </div>
