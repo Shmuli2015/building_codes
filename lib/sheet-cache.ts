@@ -80,12 +80,29 @@ async function fetchFromGoogleSheets(): Promise<{
   };
 }
 
+type EmailCacheEntry = {
+  emails: string[];
+  expiresAt: number;
+};
+
+let emailCache: EmailCacheEntry | null = null;
+
 export async function getAuthorizedEmails(): Promise<string[]> {
+  const now = Date.now();
+  const ttl = ttlMs();
+
+  if (emailCache && emailCache.expiresAt > now) {
+    return emailCache.emails;
+  }
+
   const sheetId = process.env.GOOGLE_SHEET_ID;
   const jsonRaw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
 
   if (!sheetId?.trim() || !jsonRaw?.trim()) {
-    return [process.env.AUTH_ALLOWLIST_DEV_EMAIL || ""];
+    const devEmail = process.env.AUTH_ALLOWLIST_DEV_EMAIL || "";
+    const emails = [devEmail.toLowerCase()].filter(Boolean);
+    emailCache = { emails, expiresAt: now + ttl };
+    return emails;
   }
 
   let credentials: Record<string, unknown>;
@@ -110,15 +127,21 @@ export async function getAuthorizedEmails(): Promise<string[]> {
     });
 
     const values = res.data.values;
-    if (!values) return [];
+    const emails = values
+      ? values
+          .flat()
+          .map((email) => String(email).trim().toLowerCase())
+          .filter(Boolean)
+      : [];
 
-
-    return values.flat().map((email) => String(email).trim().toLowerCase()).filter(Boolean);
+    emailCache = { emails, expiresAt: now + ttl };
+    return emails;
   } catch (err) {
     console.error("Error fetching authorized emails:", err);
     return [];
   }
 }
+
 
 export async function getCodes(options: {
   bypassCache?: boolean;

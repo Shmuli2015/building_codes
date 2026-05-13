@@ -2,9 +2,13 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-const SECRET = new TextEncoder().encode(
-  process.env.ADMIN_PASSWORD || "default-secret-change-me"
-);
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+if (!ADMIN_PASSWORD) {
+  throw new Error("Missing ADMIN_PASSWORD environment variable");
+}
+
+const SECRET = new TextEncoder().encode(ADMIN_PASSWORD);
+
 
 const COOKIE_NAME = "auth_session";
 
