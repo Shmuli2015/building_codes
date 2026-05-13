@@ -8,6 +8,8 @@ type Props = {
   street: string;
   houseNumber: string;
   area: string;
+  availableStreets?: string[];
+  availableAreas?: string[];
   onStreetChange: (value: string) => void;
   onHouseNumberChange: (value: string) => void;
   onAreaChange: (value: string) => void;
@@ -18,6 +20,8 @@ export function SearchAddressForm({
   street,
   houseNumber,
   area,
+  availableStreets = [],
+  availableAreas = [],
   onStreetChange,
   onHouseNumberChange,
   onAreaChange,
@@ -44,8 +48,14 @@ export function SearchAddressForm({
             placeholder="למשל: העלייה, רבי ינאי…"
             className={ADDRESS_INPUT_CLASS}
             dir="rtl"
-            autoComplete="street-address"
+            autoComplete="off"
+            list="streets-list"
           />
+          <datalist id="streets-list">
+            {availableStreets.map((s) => (
+              <option key={s} value={s} />
+            ))}
+          </datalist>
         </label>
         <label className="flex flex-col gap-2 text-sm">
           <span className="font-semibold text-slate-800">מספר בית</span>
@@ -68,7 +78,13 @@ export function SearchAddressForm({
             placeholder="אם צריך לצמצם התאמות"
             className={ADDRESS_INPUT_CLASS}
             dir="rtl"
+            list="areas-list"
           />
+          <datalist id="areas-list">
+            {availableAreas.map((a) => (
+              <option key={a} value={a} />
+            ))}
+          </datalist>
         </label>
       </div>
       <div className="mt-5">

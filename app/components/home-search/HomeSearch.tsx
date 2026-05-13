@@ -58,6 +58,22 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
     return filterRows(rows, street, houseNumber, area || undefined);
   }, [rows, street, houseNumber, area]);
 
+  const availableStreets = useMemo(() => {
+    const s = new Set<string>();
+    rows.forEach((r) => {
+      if (r.street) s.add(r.street);
+    });
+    return Array.from(s).sort();
+  }, [rows]);
+
+  const availableAreas = useMemo(() => {
+    const s = new Set<string>();
+    rows.forEach((r) => {
+      if (r.area) s.add(r.area);
+    });
+    return Array.from(s).sort();
+  }, [rows]);
+
   useEffect(() => {
     return () => {
       if (copyResetRef.current) clearTimeout(copyResetRef.current);
@@ -160,6 +176,8 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
               street={street}
               houseNumber={houseNumber}
               area={area}
+              availableStreets={availableStreets}
+              availableAreas={availableAreas}
               onStreetChange={setStreet}
               onHouseNumberChange={setHouseNumber}
               onAreaChange={setArea}
