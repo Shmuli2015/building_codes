@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Building entry code">
+  <defs>
+    <linearGradient id="bg" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3b82f6" />
+      <stop offset="1" stop-color="#1d4ed8" />
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="url(#bg)" />
+  <path
+    fill="#ffffff"
+    fill-opacity="0.96"
+    d="M9 7h14v19H9V7zm2 2v4h4V9h-4zm6 0v4h4V9h-4zm-6 6v4h4v-4h-4zm6 0v4h4v-4h-4zm-1 6v4h8v-4h-8z"
+  />
+</svg>

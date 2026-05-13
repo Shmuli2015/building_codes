@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿# Building entry codes — search by street and number
 
-## Getting Started
+A [Next.js](https://nextjs.org) 16 (App Router) app in Hebrew (RTL) with an optional [Google Sheets API](https://developers.google.com/sheets/api) connection via a service account. Without credentials, the app shows sample rows.
 
-First, run the development server:
+## Run locally
 
 ```bash
+npm install
+cp .env.example .env.local
+# Edit .env.local — see the environment variables table below
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Sheet layout
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The first row must be headers. You need to map at least **address** (or street), **number**, and **code**; other columns are optional. Full header-to-field mapping is in [`lib/building-codes.ts`](lib/building-codes.ts) (`HEADER_TO_FIELD`).
 
-## Learn More
+Example header row (Hebrew sheet): `אזור` · `כתובת` · `מספר` · `סוג קוד` · `קוד` · `הערה` (columns A–F).
 
-To learn more about Next.js, take a look at the following resources:
+Default read range: `גיליון1!A:F` (tab name matches common Hebrew Google Sheets UI). If your tab is named differently (e.g. `Sheet1`), set `GOOGLE_SHEET_RANGE` in `.env.local`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Google Cloud and Sheets API
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Create a project in [Google Cloud Console](https://console.cloud.google.com/).
+2. Enable **Google Sheets API**.
+3. Create a **service account** → generate and download a JSON key.
+4. Share the spreadsheet with the service account email (Viewer).
+5. Paste the full JSON into `GOOGLE_SERVICE_ACCOUNT_JSON` as a single line in `.env.local` / Vercel.
 
-## Deploy on Vercel
+`GOOGLE_SHEET_ID` is in the sheet URL between `/d/` and `/edit`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Environment variables
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Variable | Description |
+|----------|-------------|
+| `GOOGLE_SHEET_ID` | Spreadsheet ID |
+| `GOOGLE_SHEET_RANGE` | A1 notation (default `גיליון1!A:F`; match your tab name) |
+| `GOOGLE_SERVICE_ACCOUNT_JSON` | Full service account JSON |
+| `CODES_CACHE_TTL_MS` | Server cache TTL in ms (default `180000`) |
+| `NEXT_PUBLIC_SITE_URL` | (Optional) Canonical site URL for `metadataBase` and Open Graph |
+
+Without `GOOGLE_SHEET_ID` / `GOOGLE_SERVICE_ACCOUNT_JSON`, the app runs in **demo** mode with sample data.
+
+## Deploy (Vercel)
+
+Add the same variables in the project settings. Do not commit `GOOGLE_SERVICE_ACCOUNT_JSON` to the repo.
+
+## API
+
+- `GET /api/codes` — JSON with `rows`, `warnings`, `source`, `fetchedAt`, `cacheExpiresAt`, `cacheHit`.
+- `GET /api/codes?refresh=1` — bypass cache and reload from the sheet.
+
+## Local checks
+
+```bash
+npm run lint
+npm run build
+```
