@@ -2,6 +2,8 @@
 
 A [Next.js](https://nextjs.org) 16 (App Router) app in Hebrew (RTL) with an optional [Google Sheets API](https://developers.google.com/sheets/api) connection via a service account. Without credentials, the app shows sample rows.
 
+The UI is oriented toward **building entry-code lookup**. A top banner invites people who want to **add or update a code** to message you on WhatsApp — only shown when `NEXT_PUBLIC_WHATSAPP_E164` is set (see below).
+
 ## Run locally
 
 ```bash
@@ -40,12 +42,13 @@ Default read range: `גיליון1!A:F` (tab name matches common Hebrew Google S
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | Full service account JSON |
 | `CODES_CACHE_TTL_MS` | Server cache TTL in ms (default `180000`) |
 | `NEXT_PUBLIC_SITE_URL` | (Optional) Canonical site URL for `metadataBase` and Open Graph |
+| `NEXT_PUBLIC_WHATSAPP_E164` | (Optional) WhatsApp number for code submissions — **digits only**, E.164 without `+` (e.g. `972501234567`). Omit to hide the contact banner |
 
 Without `GOOGLE_SHEET_ID` / `GOOGLE_SERVICE_ACCOUNT_JSON`, the app runs in **demo** mode with sample data.
 
 ## Deploy (Vercel)
 
-Add the same variables in the project settings. Do not commit `GOOGLE_SERVICE_ACCOUNT_JSON` to the repo.
+Add the same variables in the project settings. Do not commit `GOOGLE_SERVICE_ACCOUNT_JSON` or `.env.local` to the repo. Set `NEXT_PUBLIC_WHATSAPP_E164` in Vercel if you want the WhatsApp banner in production.
 
 ## API
 
