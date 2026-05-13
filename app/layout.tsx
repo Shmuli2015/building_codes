@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Heebo, Noto_Sans_Hebrew } from "next/font/google";
 
 import { ContactWhatsAppBanner } from "./components/ContactWhatsAppBanner";
+import { Footer } from "./components/Footer";
 import "./globals.css";
+
 
 const noto = Noto_Sans_Hebrew({
   subsets: ["hebrew"],
@@ -74,6 +76,9 @@ export default function RootLayout({
         <main className="flex min-h-[min(100dvh,max-content)] w-full flex-1 flex-col">
           {children}
         </main>
+        <Footer />
+
+
       </body>
     </html>
   );
