@@ -18,7 +18,7 @@ export function ContactWhatsAppBanner() {
       className="border-b border-emerald-600/15 bg-emerald-600/9 px-4 py-2.5 text-center text-sm text-slate-800 backdrop-blur-sm"
     >
       <p className="mx-auto max-w-2xl leading-relaxed">
-        להוספת או עדכון קוד כניסה לבניין —{" "}
+        להוספת או עדכון קוד כניסה לבניין:{" "}
         <a
           href={href}
           target="_blank"
