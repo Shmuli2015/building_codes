@@ -80,6 +80,46 @@ async function fetchFromGoogleSheets(): Promise<{
   };
 }
 
+export async function getAuthorizedEmails(): Promise<string[]> {
+  const sheetId = process.env.GOOGLE_SHEET_ID;
+  const jsonRaw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+
+  if (!sheetId?.trim() || !jsonRaw?.trim()) {
+    return [process.env.AUTH_ALLOWLIST_DEV_EMAIL || ""];
+  }
+
+  let credentials: Record<string, unknown>;
+  try {
+    credentials = JSON.parse(jsonRaw) as Record<string, unknown>;
+  } catch {
+    return [];
+  }
+
+  const auth = new google.auth.GoogleAuth({
+    credentials,
+    scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+  });
+
+  const sheets = google.sheets({ version: "v4", auth });
+  const range = process.env.GOOGLE_SHEET_AUTH_RANGE?.trim() || "מורשים!A:A";
+
+  try {
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: sheetId,
+      range,
+    });
+
+    const values = res.data.values;
+    if (!values) return [];
+
+
+    return values.flat().map((email) => String(email).trim().toLowerCase()).filter(Boolean);
+  } catch (err) {
+    console.error("Error fetching authorized emails:", err);
+    return [];
+  }
+}
+
 export async function getCodes(options: {
   bypassCache?: boolean;
 }): Promise<CachedCodesPayload> {

@@ -1,11 +1,18 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+
 function digitsOnly(value: string): string {
   return value.replace(/\D/g, "");
 }
 
 export function ContactWhatsAppBanner() {
+  const pathname = usePathname();
   const raw = process.env.NEXT_PUBLIC_WHATSAPP_E164?.trim();
   const phone = raw ? digitsOnly(raw) : "";
-  if (!phone) {
+
+
+  if (!phone || pathname === "/login") {
     return null;
   }
 
@@ -17,8 +24,8 @@ export function ContactWhatsAppBanner() {
       aria-label="יצירת קשר להוספת קוד כניסה לבניין"
       className="border-b border-emerald-600/15 bg-emerald-600/9 px-4 py-2.5 text-center text-sm text-slate-800 backdrop-blur-sm"
     >
-      <p className="mx-auto max-w-2xl leading-relaxed">
-        להוספת או עדכון קוד כניסה לבניין:{" "}
+      <p className="mx-auto max-w-2xl leading-relaxed flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1">
+        <span>להוספת או עדכון קוד כניסה לבניין:</span>
         <a
           href={href}
           target="_blank"

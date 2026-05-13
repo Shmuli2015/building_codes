@@ -39,13 +39,6 @@ export function HomeSearchHeader() {
         הזינו רחוב, מספר בית ובמידת הצורך גם שכונה ותקבלו את קוד הכניסה אם הוא
         מופיע ברשימה.
       </p>
-      <p
-        role="note"
-        className="mx-auto mt-4 max-w-md rounded-xl border border-amber-200/85 bg-amber-50/90 px-4 py-2.5 text-pretty text-center text-[0.8125rem] font-semibold leading-snug text-amber-950 sm:text-start"
-      >
-        השירות מיועד לשימוש חובשי רפואת חירום בלבד ואינו מיועד לשימוש מסחרי או
-        פרטי.
-      </p>
     </header>
   );
 }

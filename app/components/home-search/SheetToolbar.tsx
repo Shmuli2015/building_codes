@@ -6,6 +6,8 @@ import { useEffect, useMemo, useState } from "react";
 import { formatRelativeTimeHe } from "@/lib/relative-time-he";
 
 import { RefreshIcon } from "./icons";
+import { logout } from "@/lib/auth-actions";
+import { LogoutConfirmModal } from "./LogoutConfirmModal";
 
 type Props = {
   loading: boolean;
@@ -16,6 +18,7 @@ type Props = {
 export function SheetToolbar({ loading, onRefresh, lastFetch }: Props) {
   const reduceMotion = useReducedMotion();
   const [relativeTick, setRelativeTick] = useState(0);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
 
   useEffect(() => {
     const id = window.setInterval(() => setRelativeTick((n) => n + 1), 30_000);
@@ -59,21 +62,39 @@ export function SheetToolbar({ loading, onRefresh, lastFetch }: Props) {
         {loading ? "טוען…" : "רענון"}
       </motion.button>
 
-      <div className="min-w-0 text-[11px] text-slate-500">
-        {lastFetch ? (
-          <motion.time
-            dateTime={lastFetch}
-            title={absoluteTitle}
-            initial={false}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          >
-            עודכן {relativeLabel}
-          </motion.time>
-        ) : (
-          <span>ממתין לעדכון</span>
-        )}
+      <div className="flex items-center gap-3">
+        <div className="min-w-0 text-[11px] text-slate-500">
+          {lastFetch ? (
+            <motion.time
+              dateTime={lastFetch}
+              title={absoluteTitle}
+              initial={false}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              עודכן {relativeLabel}
+            </motion.time>
+          ) : (
+            <span>ממתין לעדכון</span>
+          )}
+        </div>
+
+        <motion.button
+          type="button"
+          onClick={() => setIsLogoutConfirmOpen(true)}
+          whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+          whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+          className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-red-200/50 bg-red-50/50 px-2 py-1 text-[11px] font-medium text-red-700 shadow-sm backdrop-blur-sm transition-colors hover:bg-red-100/70"
+        >
+          יציאה
+        </motion.button>
       </div>
+
+      <LogoutConfirmModal
+        open={isLogoutConfirmOpen}
+        onClose={() => setIsLogoutConfirmOpen(false)}
+        onConfirm={() => logout()}
+      />
     </div>
   );
 }

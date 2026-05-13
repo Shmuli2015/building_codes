@@ -128,7 +128,7 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
   return (
     <div className="relative flex w-full flex-1 flex-col overflow-x-clip">
       <BackgroundGlow />
-      <div className="relative z-[1] mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-8 sm:px-5 sm:py-10 md:py-11">
+      <div className="relative z-[1] mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-4 sm:px-5 sm:py-6 md:py-8">
         <motion.div
           className="flex w-full flex-1 flex-col gap-4"
           variants={containerVariants}

@@ -47,7 +47,7 @@ export function ResultModal({
       {open ? (
         <motion.div
           key="result-overlay"
-          className="fixed inset-0 z-50 flex items-end justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] pt-8 sm:items-center sm:p-5 sm:pt-5"
+          className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-5"
           role="presentation"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

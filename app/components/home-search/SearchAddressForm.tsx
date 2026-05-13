@@ -81,9 +81,6 @@ export function SearchAddressForm({
         >
           הצג קוד כניסה
         </motion.button>
-        <p className="mt-2 text-center text-xs text-slate-500">
-          או הקישו Enter אחרי מילוי השדות
-        </p>
       </div>
     </motion.form>
   );
