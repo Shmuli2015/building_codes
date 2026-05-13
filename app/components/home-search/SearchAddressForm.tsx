@@ -14,6 +14,7 @@ type Props = {
   onHouseNumberChange: (value: string) => void;
   onAreaChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
+  onClear: () => void;
 };
 
 export function SearchAddressForm({
@@ -26,8 +27,11 @@ export function SearchAddressForm({
   onHouseNumberChange,
   onAreaChange,
   onSubmit,
+  onClear,
 }: Props) {
   const reduceMotion = useReducedMotion();
+
+  const isSubmitDisabled = !street.trim() || !houseNumber.trim();
 
   return (
     <motion.form
@@ -87,16 +91,25 @@ export function SearchAddressForm({
           </datalist>
         </label>
       </div>
-      <div className="mt-5">
+      <div className="mt-6 flex flex-col items-center gap-3">
         <motion.button
           type="submit"
-          whileHover={reduceMotion ? undefined : { scale: 1.01 }}
-          whileTap={reduceMotion ? undefined : { scale: 0.99 }}
+          disabled={isSubmitDisabled}
+          whileHover={reduceMotion || isSubmitDisabled ? undefined : { scale: 1.01 }}
+          whileTap={reduceMotion || isSubmitDisabled ? undefined : { scale: 0.99 }}
           transition={{ type: "spring", stiffness: 500, damping: 28 }}
-          className="relative min-h-[3.125rem] w-full overflow-hidden rounded-2xl bg-linear-to-l from-blue-600 via-indigo-600 to-blue-700 px-5 py-[0.9rem] text-base font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.2)_inset,0_12px_36px_-12px_rgba(37,99,235,0.45)] ring-1 ring-white/25 outline-none hover:brightness-[1.04] active:brightness-[0.97] md:py-4"
+          className="relative min-h-[3.125rem] w-full overflow-hidden rounded-2xl bg-linear-to-l from-blue-600 via-indigo-600 to-blue-700 px-5 py-[0.9rem] text-base font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.2)_inset,0_12px_36px_-12px_rgba(37,99,235,0.45)] ring-1 ring-white/25 outline-none hover:brightness-[1.04] active:brightness-[0.97] disabled:cursor-not-allowed disabled:opacity-50 disabled:grayscale-[0.3] md:py-4"
         >
           הצג קוד כניסה
         </motion.button>
+
+        <button
+          type="button"
+          onClick={onClear}
+          className="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
+        >
+          נקה הכל
+        </button>
       </div>
     </motion.form>
   );

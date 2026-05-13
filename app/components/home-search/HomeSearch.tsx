@@ -133,6 +133,12 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
     };
   }, [resultModalOpen, closeModal]);
 
+  const handleClear = useCallback(() => {
+    setStreet("");
+    setHouseNumber("");
+    setArea("");
+  }, []);
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     openResultsModal();
@@ -182,6 +188,7 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
               onHouseNumberChange={setHouseNumber}
               onAreaChange={setArea}
               onSubmit={handleFormSubmit}
+              onClear={handleClear}
             />
           </motion.div>
         </motion.div>
