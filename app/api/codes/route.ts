@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { getCodes } from "@/lib/sheet-cache";
 
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       fetchedAt: new Date().toISOString(),
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "שגיאה בטעינת הגיליון";
+    const message = err instanceof Error ? err.message : "שגיאה בטעינת הנתונים";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

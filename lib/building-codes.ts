@@ -1,4 +1,4 @@
-﻿export type BuildingCodeRow = {
+export type BuildingCodeRow = {
   area: string;
   street: string;
   number: string;
@@ -58,7 +58,7 @@ function emptyRow(): BuildingCodeRow {
 export function parseSheetGrid(values: string[][] | null | undefined): ParsedSheetResult {
   const warnings: string[] = [];
   if (!values || values.length === 0) {
-    warnings.push("הגיליון ריק או שהטווח לא כולל נתונים.");
+    warnings.push("הרשימה ריקה או שאין נתונים זמינים.");
     return { rows: [], warnings };
   }
 

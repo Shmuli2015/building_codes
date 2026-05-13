@@ -28,11 +28,13 @@ export function SearchAddressForm({
   return (
     <motion.form
       onSubmit={onSubmit}
-      className="rounded-3xl border border-white/70 bg-linear-to-b from-white/95 to-white/80 p-5 shadow-2xl shadow-indigo-950/10 ring-1 ring-blue-500/10 backdrop-blur-xl sm:p-7"
-      whileHover={reduceMotion ? undefined : { boxShadow: "0 25px 50px -12px rgba(30, 58, 138, 0.18)" }}
+      className="rounded-[var(--radius-2xl)] border border-white/60 bg-linear-to-b from-[var(--surface-strong)] via-white/[0.93] to-white/88 p-4 shadow-[var(--shadow-card)] ring-1 ring-slate-900/[0.04] backdrop-blur-xl sm:p-6"
+      whileHover={
+        reduceMotion ? undefined : { boxShadow: "var(--shadow-card), 0 18px 50px -24px rgba(37,99,235,0.15)" }
+      }
       transition={{ type: "spring", stiffness: 300, damping: 35 }}
     >
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-2 text-sm sm:col-span-2">
           <span className="font-semibold text-slate-800">רחוב</span>
           <input
@@ -69,17 +71,17 @@ export function SearchAddressForm({
           />
         </label>
       </div>
-      <div className="mt-7">
+      <div className="mt-5">
         <motion.button
           type="submit"
           whileHover={reduceMotion ? undefined : { scale: 1.01 }}
-          whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+          whileTap={reduceMotion ? undefined : { scale: 0.99 }}
           transition={{ type: "spring", stiffness: 500, damping: 28 }}
-          className="relative w-full overflow-hidden rounded-2xl bg-linear-to-l from-blue-600 via-indigo-600 to-violet-600 px-5 py-4 text-base font-bold text-white shadow-xl shadow-indigo-600/35 ring-1 ring-white/30 transition-[filter] hover:brightness-110 active:brightness-95"
+          className="relative min-h-[3.125rem] w-full overflow-hidden rounded-2xl bg-linear-to-l from-blue-600 via-indigo-600 to-blue-700 px-5 py-[0.9rem] text-base font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.2)_inset,0_12px_36px_-12px_rgba(37,99,235,0.45)] ring-1 ring-white/25 outline-none hover:brightness-[1.04] active:brightness-[0.97] md:py-4"
         >
-          הצג קוד
+          הצג קוד כניסה
         </motion.button>
-        <p className="mt-3 text-center text-xs text-slate-500">
+        <p className="mt-2 text-center text-xs text-slate-500">
           או הקישו Enter אחרי מילוי השדות
         </p>
       </div>

@@ -10,32 +10,43 @@ export function HomeSearchHeader() {
   return (
     <header className="text-center sm:text-start">
       <motion.div
-        className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200/80 bg-linear-to-l from-blue-50/95 to-indigo-50/90 px-4 py-1.5 text-sm font-medium text-blue-900 shadow-md shadow-blue-600/10 ring-1 ring-white/60"
-        whileHover={{ scale: 1.02 }}
-        transition={{ type: "spring", stiffness: 400, damping: 24 }}
+        className="mb-2 inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/70 px-3.5 py-1.5 text-sm font-medium text-slate-700 shadow-[var(--shadow-card)] ring-1 ring-white/55 backdrop-blur-md"
+        whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+        transition={{ type: "spring", stiffness: 400, damping: 26 }}
       >
         <motion.span
           aria-hidden
-          className="flex"
+          className="flex text-blue-600"
           animate={
             reduceMotion ? undefined : { y: [0, -2, 0] }
           }
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         >
-          <MapPinIcon className="h-4 w-4 text-blue-600" />
+          <MapPinIcon className="h-4 w-4 shrink-0" />
         </motion.span>
         קוד כניסה לפי כתובת
       </motion.div>
       <motion.h1
-        className="text-balance bg-linear-to-l from-slate-900 via-blue-900 to-indigo-950 bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl"
-        initial={{ opacity: 0.85 }}
+        className="font-display text-balance bg-linear-to-l from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-[1.75rem] font-semibold leading-tight tracking-tight text-transparent sm:text-4xl sm:leading-snug"
+        initial={{ opacity: 0.92 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.65 }}
       >
-        חיפוש קוד בניין
+        חיפוש{" "}
+        <span className="bg-linear-to-l from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+          קוד בניין
+        </span>
       </motion.h1>
-      <p className="mx-auto mt-3 max-w-md text-pretty text-base leading-relaxed text-slate-600 sm:mx-0">
-        הזינו את שם הרחוב ומספר הבית כדי לקבל את קוד הכניסה.
+      <p className="mx-auto mt-2.5 max-w-md text-pretty text-[0.9375rem] leading-relaxed text-slate-600 sm:mx-0 sm:text-base">
+        הזינו רחוב, מספר בית ובמידת הצורך גם שכונה ותקבלו את קוד הכניסה אם הוא
+        מופיע ברשימה.
+      </p>
+      <p
+        role="note"
+        className="mx-auto mt-4 max-w-md rounded-xl border border-amber-200/85 bg-amber-50/90 px-4 py-2.5 text-pretty text-center text-[0.8125rem] font-semibold leading-snug text-amber-950 sm:text-start"
+      >
+        השירות מיועד לשימוש חובשי רפואת חירום בלבד ואינו מיועד לשימוש מסחרי או
+        פרטי.
       </p>
     </header>
   );

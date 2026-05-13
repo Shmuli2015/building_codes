@@ -1,2 +1,2 @@
 export const ADDRESS_INPUT_CLASS =
-  "w-full rounded-xl border border-slate-200/90 bg-white/95 px-4 py-3 text-base text-slate-900 shadow-inner shadow-slate-200/30 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300/90 focus:border-blue-400 focus:shadow-md focus:shadow-blue-500/10 focus:ring-4 focus:ring-blue-500/15";
+  "min-h-[3rem] w-full rounded-2xl border border-slate-200/95 bg-white/98 px-4 py-[0.7rem] text-base text-slate-900 placeholder:text-slate-400 shadow-[0_1px_2px_rgba(15,23,42,0.04)_inset] outline-none transition-[border-color,box-shadow,background-color] duration-200 hover:border-slate-300 hover:bg-white focus:border-blue-500/90 focus:bg-white focus:shadow-[0_0_0_4px_rgba(59,130,246,0.14)] md:min-h-0 md:py-3";

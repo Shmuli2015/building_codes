@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "קודי בניין — חיפוש קוד כניסה לפי כתובת",
     short_name: "קודי בניין",
     description:
-      "מצאו במהירות קוד כניסה לבניין לפי שם רחוב ומספר בית. ממשק בעברית, מקור הנתונים מגוגל שיטס.",
+      "חיפוש קוד כניסה לבניין לפי רחוב ומספר בית. ממשק בעברית.",
     start_url: "/",
     scope: "/",
     display: "standalone",

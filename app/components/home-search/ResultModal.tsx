@@ -47,7 +47,7 @@ export function ResultModal({
       {open ? (
         <motion.div
           key="result-overlay"
-          className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
+          className="fixed inset-0 z-50 flex items-end justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] pt-8 sm:items-center sm:p-5 sm:pt-5"
           role="presentation"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -68,7 +68,7 @@ export function ResultModal({
             role="dialog"
             aria-modal="true"
             aria-labelledby="result-modal-title"
-            className="relative z-10 max-h-[min(85vh,40rem)] w-full max-w-lg overflow-hidden rounded-3xl border border-white/60 bg-linear-to-b from-white to-slate-50/95 shadow-2xl shadow-indigo-950/30 ring-1 ring-blue-500/10"
+            className="relative z-10 flex max-h-[min(92dvh,42rem)] w-full max-w-lg flex-col overflow-hidden rounded-[1.875rem] border border-white/70 bg-linear-to-b from-white via-white to-slate-50/[0.96] shadow-[var(--shadow-card)] ring-1 ring-blue-600/[0.07] sm:rounded-[var(--radius-2xl)] sm:shadow-[var(--shadow-card),0_32px_64px_-32px_rgba(15,23,42,0.18)]"
             initial={
               reduceMotion
                 ? { opacity: 0 }
@@ -83,12 +83,12 @@ export function ResultModal({
             transition={panelTransition}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-slate-100/90 bg-linear-to-l from-blue-50/80 via-white to-indigo-50/50 px-4 py-4 sm:px-5">
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-100/95 bg-linear-to-l from-blue-50/70 via-white to-indigo-50/40 px-4 py-[1.015rem] sm:px-5">
               <h2
                 id="result-modal-title"
-                className="bg-linear-to-l from-slate-900 to-indigo-900 bg-clip-text text-lg font-bold text-transparent"
+                className="font-display text-lg font-semibold tracking-tight text-slate-900 sm:text-xl"
               >
-                תוצאת חיפוש
+                תוצאות חיפוש
               </h2>
               <motion.button
                 ref={closeButtonRef}
@@ -97,19 +97,19 @@ export function ResultModal({
                 whileHover={reduceMotion ? undefined : { scale: 1.08, rotate: 90 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.92 }}
                 transition={{ type: "spring", stiffness: 450, damping: 22 }}
-                className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+                className="rounded-xl p-2.5 text-slate-500 outline-none ring-blue-600/35 transition-colors hover:bg-slate-100 hover:text-slate-800 focus-visible:ring-[3px]"
                 aria-label="סגור חלון"
               >
                 <CloseIcon className="h-5 w-5" />
               </motion.button>
             </div>
 
-            <div className="max-h-[min(75vh,32rem)] overflow-y-auto px-4 py-5 sm:px-6">
+            <div className="max-h-[min(76dvh,32rem)] overflow-y-auto overscroll-contain px-4 py-5 sm:max-h-[min(calc(85vh-5rem),32rem)] sm:px-6">
               {!street.trim() || !houseNumber.trim() ? (
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="text-center text-sm font-medium text-slate-600"
+                  className="rounded-2xl border border-slate-100 bg-slate-50/95 px-4 py-10 text-center text-sm font-medium leading-relaxed text-slate-600 sm:px-6"
                 >
                   נא למלא לפחות <strong>רחוב</strong> ו<strong>מספר בית</strong>{" "}
                   כדי לחפש.
@@ -119,9 +119,9 @@ export function ResultModal({
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={panelTransition}
-                  className="text-center text-sm font-medium text-slate-600"
+                  className="rounded-2xl border border-slate-200/80 bg-slate-50/90 px-4 py-9 text-center text-sm font-medium text-slate-600 sm:px-6"
                 >
-                  לא נמצאה התאמה לכתובת זו ברשימה.
+                  לא נמצאה התאמה לכתובת זו ברשימה כרגע.
                 </motion.p>
               ) : (
                 <ul className="space-y-4">

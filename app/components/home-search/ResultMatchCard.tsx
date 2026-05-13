@@ -90,7 +90,7 @@ export function ResultMatchCard({
             transition={{ delay: 0.1 + index * 0.05 }}
           >
             {row.kind ? (
-              <span className="inline-flex rounded-lg bg-(--accent-soft) px-2.5 py-1 text-xs font-semibold text-blue-900">
+              <span className="inline-flex rounded-xl border border-blue-500/25 bg-[var(--accent-soft)] px-2.5 py-1 text-xs font-semibold text-blue-900">
                 {row.kind}
               </span>
             ) : null}

@@ -126,59 +126,60 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
   const itemVariants = staggerItem(reduceMotion);
 
   return (
-    <div className="relative flex w-full flex-1 flex-col px-4 py-10 sm:px-6 sm:py-14">
+    <div className="relative flex w-full flex-1 flex-col overflow-x-clip">
       <BackgroundGlow />
+      <div className="relative z-[1] mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-8 sm:px-5 sm:py-10 md:py-11">
+        <motion.div
+          className="flex w-full flex-1 flex-col gap-4"
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+        >
+          <motion.div
+            variants={itemVariants}
+            className="flex flex-col gap-1 sm:gap-1.5"
+          >
+            <SheetToolbar
+              loading={loading}
+              onRefresh={() => void load(true)}
+              lastFetch={lastFetch}
+            />
+            <HomeSearchHeader />
+          </motion.div>
 
-      <motion.div
-        className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-8"
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-      >
-        <motion.div variants={itemVariants}>
-          <HomeSearchHeader />
+          <motion.div variants={itemVariants}>
+            <LoadErrorAlert message={loadError} />
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <WarningsBanner warnings={warnings} />
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <SearchAddressForm
+              street={street}
+              houseNumber={houseNumber}
+              area={area}
+              onStreetChange={setStreet}
+              onHouseNumberChange={setHouseNumber}
+              onAreaChange={setArea}
+              onSubmit={handleFormSubmit}
+            />
+          </motion.div>
         </motion.div>
 
-        <motion.div variants={itemVariants}>
-          <SheetToolbar
-            loading={loading}
-            onRefresh={() => void load(true)}
-            lastFetch={lastFetch}
-          />
-        </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <LoadErrorAlert message={loadError} />
-        </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <WarningsBanner warnings={warnings} />
-        </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <SearchAddressForm
-            street={street}
-            houseNumber={houseNumber}
-            area={area}
-            onStreetChange={setStreet}
-            onHouseNumberChange={setHouseNumber}
-            onAreaChange={setArea}
-            onSubmit={handleFormSubmit}
-          />
-        </motion.div>
-      </motion.div>
-
-      <ResultModal
-        open={resultModalOpen}
-        onClose={closeModal}
-        closeButtonRef={closeButtonRef}
-        street={street}
-        houseNumber={houseNumber}
-        matches={matches}
-        copiedRowKey={copiedRowKey}
-        failedCopyKey={failedCopyKey}
-        onCopy={copyCode}
-      />
+        <ResultModal
+          open={resultModalOpen}
+          onClose={closeModal}
+          closeButtonRef={closeButtonRef}
+          street={street}
+          houseNumber={houseNumber}
+          matches={matches}
+          copiedRowKey={copiedRowKey}
+          failedCopyKey={failedCopyKey}
+          onCopy={copyCode}
+        />
+      </div>
     </div>
   );
 }

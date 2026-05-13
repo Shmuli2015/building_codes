@@ -1,5 +1,5 @@
 ﻿import type { Metadata, Viewport } from "next";
-import { Noto_Sans_Hebrew } from "next/font/google";
+import { Heebo, Noto_Sans_Hebrew } from "next/font/google";
 
 import "./globals.css";
 
@@ -9,10 +9,19 @@ const noto = Noto_Sans_Hebrew({
   display: "swap",
 });
 
+const heebo = Heebo({
+  subsets: ["hebrew"],
+  variable: "--font-display",
+  display: "swap",
+});
+
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
 export const viewport: Viewport = {
   themeColor: "#2563eb",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
@@ -22,12 +31,11 @@ export const metadata: Metadata = {
     template: "%s · קודי בניין",
   },
   description:
-    "מצאו במהירות קוד כניסה לבניין לפי שם רחוב ומספר בית. ממשק בעברית, מקור הנתונים מגוגל שיטס — אידיאלי לשליחים, אנשי מקצוע ודיירים.",
+    "חיפוש קוד כניסה לבניין לפי רחוב, מספר בית ואופציונלית שכונה. ממשק בעברית.",
   keywords: [
     "קוד בניין",
     "קוד כניסה",
     "חיפוש כתובת",
-    "שליחים",
     "בניין מגורים",
   ],
   openGraph: {
@@ -35,13 +43,13 @@ export const metadata: Metadata = {
     locale: "he_IL",
     title: "קודי בניין — חיפוש קוד כניסה לפי כתובת",
     description:
-      "חיפוש קודי כניסה לפי רחוב ומספר בית, ממשק בעברית ונתונים מעודכנים מהגיליון שלכם.",
+      "חיפוש קודי כניסה לפי רחוב ומספר בית, ממשק בעברית.",
   },
   twitter: {
     card: "summary",
     title: "קודי בניין — חיפוש קוד כניסה לפי כתובת",
     description:
-      "חיפוש קודי כניסה לפי רחוב ומספר בית, בעברית ובחיבור לגוגל שיטס.",
+      "חיפוש קודי כניסה לפי רחוב ומספר בית, ממשק בעברית.",
   },
   appleWebApp: {
     capable: true,
@@ -55,12 +63,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="he" dir="rtl" className={`${noto.variable} h-full antialiased`}>
-      <body className="flex min-h-screen flex-col font-sans text-slate-900">
-        <main className="flex w-full flex-1 flex-col">{children}</main>
-        <footer className="mt-auto border-t border-slate-200/90 bg-slate-50/95 py-5 text-center text-sm text-slate-600 shadow-[0_-1px_0_rgba(255,255,255,0.8)_inset] backdrop-blur-sm">
-          <p className="font-medium tracking-wide text-slate-700">
-            נבנה ע״י שמואל רוזנברג
+    <html
+      lang="he"
+      dir="rtl"
+      className={`${noto.variable} ${heebo.variable} h-full antialiased`}
+    >
+      <body className="flex min-h-dvh flex-col font-sans text-slate-900 selection:bg-blue-500/18 selection:text-slate-900">
+        <main className="flex min-h-[min(100dvh,max-content)] w-full flex-1 flex-col">
+          {children}
+        </main>
+        <footer className="mt-auto border-t border-slate-200/60 bg-[var(--surface-strong)]/88 px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] pt-6 text-center text-sm backdrop-blur-xl">
+          <p className="mx-auto mb-4 max-w-md text-xs leading-relaxed text-slate-500">
+            השירות מיועד לשימוש חובשי רפואת חירום בלבד ואינו מיועד לשימוש מסחרי או
+            פרטי.
           </p>
         </footer>
       </body>

@@ -26,7 +26,7 @@ export function staggerContainer(reduceMotion: boolean | null): Variants {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.09, delayChildren: 0.05 },
+      transition: { staggerChildren: 0.05, delayChildren: 0.03 },
     },
   };
 }

@@ -1,4 +1,4 @@
-﻿import { google } from "googleapis";
+import { google } from "googleapis";
 
 import {
   type BuildingCodeRow,
@@ -44,7 +44,7 @@ async function fetchFromGoogleSheets(): Promise<{
     return {
       rows: SAMPLE_ROWS,
       warnings: [
-        "מצב הדגמה: לא הוגדרו GOOGLE_SHEET_ID / GOOGLE_SERVICE_ACCOUNT_JSON. מוצגות שורות לדוגמה בלבד.",
+        "מצב הדגמה — מוצגות שורות לדוגמה בלבד.",
       ],
       source: "mock",
     };
@@ -56,7 +56,7 @@ async function fetchFromGoogleSheets(): Promise<{
   } catch {
     return {
       rows: [],
-      warnings: ["GOOGLE_SERVICE_ACCOUNT_JSON אינו JSON תקין."],
+      warnings: ["קובץ ההגדרות אינו בפורמט תקין."],
       source: "mock",
     };
   }
