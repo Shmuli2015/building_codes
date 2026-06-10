@@ -67,6 +67,58 @@ body {
   }
 }
 
+@keyframes bg-glow-pulse-1 {
+  0%,
+  100% {
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.12);
+  }
+}
+
+@keyframes bg-glow-drift-2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(12px, -8px) scale(1.08);
+  }
+}
+
+@keyframes bg-glow-fade-3 {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+}
+
+.bg-glow-1 {
+  animation: bg-glow-pulse-1 18s ease-in-out infinite;
+}
+
+.bg-glow-2 {
+  animation: bg-glow-drift-2 22s ease-in-out infinite;
+}
+
+.bg-glow-3 {
+  animation: bg-glow-fade-3 15s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-glow-1,
+  .bg-glow-2,
+  .bg-glow-3 {
+    animation: none;
+  }
+}
+
 .form-input {
   background-color: #f8fafc;
   color: #0f172a;

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { m, useReducedMotion } from "framer-motion";
 
 import { springSnappy } from "./motion-config";
 
@@ -8,7 +8,7 @@ export function HomeSearchHeader() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <motion.div
+    <m.div
       className="text-start"
       initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -23,6 +23,6 @@ export function HomeSearchHeader() {
       <p className="mt-0.5 text-sm leading-snug text-slate-500">
         לפי רחוב, מספר בית ושכונה (אופציונלי)
       </p>
-    </motion.div>
+    </m.div>
   );
 }

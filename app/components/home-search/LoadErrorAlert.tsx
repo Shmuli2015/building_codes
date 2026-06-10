@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 
 type Props = {
   message: string | null;
@@ -10,7 +10,7 @@ export function LoadErrorAlert({ message }: Props) {
   return (
     <AnimatePresence mode="wait">
       {message ? (
-        <motion.div
+        <m.div
           key="load-error"
           role="alert"
           initial={{ opacity: 0, y: -10, scale: 0.98 }}
@@ -20,7 +20,7 @@ export function LoadErrorAlert({ message }: Props) {
           className="rounded-2xl border border-red-200/90 bg-red-50/95 px-4 py-3 text-sm font-medium text-red-900 shadow-lg shadow-red-900/10"
         >
           {message}
-        </motion.div>
+        </m.div>
       ) : null}
     </AnimatePresence>
   );

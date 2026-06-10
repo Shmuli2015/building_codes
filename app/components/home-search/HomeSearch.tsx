@@ -1,36 +1,52 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import type { BuildingCodeRow } from "@/lib/building-codes";
-import { filterRows, streetMatches } from "@/lib/normalize";
+import { getHouseNumbersForStreet } from "@/lib/search-index";
 
 import { BackgroundGlow } from "./BackgroundGlow";
 import { HomeSearchHeader } from "./HomeSearchHeader";
 import { LoadErrorAlert } from "./LoadErrorAlert";
 import { staggerContainer, staggerItem } from "./motion-config";
-import type { ApiResponse, HomeSearchProps } from "./types";
-import { ResultModal } from "./ResultModal";
+import type { ApiResponse, HomeSearchProps, SearchApiResponse } from "./types";
 import { SearchAddressForm } from "./SearchAddressForm";
 import { SheetToolbar } from "./SheetToolbar";
 import { WarningsBanner } from "./WarningsBanner";
+
+const ResultModal = dynamic(
+  () => import("./ResultModal").then((mod) => ({ default: mod.ResultModal })),
+  { ssr: false },
+);
 
 export default function HomeSearch({ initial }: HomeSearchProps) {
   const reduceMotion = useReducedMotion();
   const [street, setStreet] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
   const [area, setArea] = useState("");
-  const [rows, setRows] = useState<BuildingCodeRow[]>(initial.rows);
+  const [index, setIndex] = useState(initial.index);
   const [warnings, setWarnings] = useState<string[]>(initial.warnings);
   const [loading, setLoading] = useState(false);
+  const [searching, setSearching] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [lastFetch, setLastFetch] = useState<string | null>(initial.fetchedAt);
   const [resultModalOpen, setResultModalOpen] = useState(false);
+  const [matches, setMatches] = useState<BuildingCodeRow[]>([]);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [copiedRowKey, setCopiedRowKey] = useState<string | null>(null);
   const [failedCopyKey, setFailedCopyKey] = useState<string | null>(null);
   const copyResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const deferredStreet = useDeferredValue(street);
 
   const load = useCallback(async (refresh: boolean) => {
     setLoading(true);
@@ -43,7 +59,7 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
         setLoadError(data.error ?? "טעינה נכשלה");
         return;
       }
-      setRows(data.rows ?? []);
+      setIndex(data.index);
       setWarnings(data.warnings ?? []);
       setLastFetch(data.fetchedAt ?? null);
     } catch {
@@ -53,51 +69,17 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
     }
   }, []);
 
-  const matches = useMemo(() => {
-    if (!street.trim() || !houseNumber.trim()) return [];
-    return filterRows(rows, street, houseNumber, area || undefined);
-  }, [rows, street, houseNumber, area]);
-
-  const availableStreets = useMemo(() => {
-    const s = new Set<string>();
-    rows.forEach((r) => {
-      if (r.street) s.add(r.street);
-    });
-    return Array.from(s).sort();
-  }, [rows]);
-
-  const availableAreas = useMemo(() => {
-    const s = new Set<string>();
-    rows.forEach((r) => {
-      if (r.area) s.add(r.area);
-    });
-    return Array.from(s).sort();
-  }, [rows]);
-
-  const availableHouseNumbers = useMemo(() => {
-    if (!street.trim()) return [];
-    const s = new Set<string>();
-    rows.forEach((r) => {
-      if (r.number && streetMatches(street, r.street)) {
-        s.add(r.number);
-      }
-    });
-    return Array.from(s).sort((a, b) => {
-      const na = Number(a);
-      const nb = Number(b);
-      if (!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb;
-      return a.localeCompare(b, "he");
-    });
-  }, [rows, street]);
+  const availableStreets = useMemo(() => index.streets, [index.streets]);
+  const availableAreas = useMemo(() => index.areas, [index.areas]);
+  const availableHouseNumbers = useMemo(
+    () => getHouseNumbersForStreet(index, deferredStreet),
+    [index, deferredStreet],
+  );
 
   useEffect(() => {
     return () => {
       if (copyResetRef.current) clearTimeout(copyResetRef.current);
     };
-  }, []);
-
-  const openResultsModal = useCallback(() => {
-    setResultModalOpen(true);
   }, []);
 
   const copyCode = useCallback(async (code: string, rowKey: string) => {
@@ -155,74 +137,104 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
     setArea("");
   }, []);
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    openResultsModal();
-  };
+  const handleFormSubmit = useCallback(
+    async (e: React.SubmitEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      setSearching(true);
+      setLoadError(null);
+      try {
+        const params = new URLSearchParams({
+          street: street.trim(),
+          number: houseNumber.trim(),
+        });
+        if (area.trim()) {
+          params.set("area", area.trim());
+        }
+        const res = await fetch(`/api/codes/search?${params}`, {
+          cache: "no-store",
+        });
+        const data = (await res.json()) as SearchApiResponse;
+        if (!res.ok) {
+          setLoadError(data.error ?? "חיפוש נכשל");
+          return;
+        }
+        setMatches(data.matches ?? []);
+        setResultModalOpen(true);
+      } catch {
+        setLoadError("לא ניתן לבצע חיפוש. נסו שוב.");
+      } finally {
+        setSearching(false);
+      }
+    },
+    [street, houseNumber, area],
+  );
 
   const containerVariants = staggerContainer(reduceMotion);
   const itemVariants = staggerItem(reduceMotion);
 
   return (
-    <div className="relative flex w-full flex-1 flex-col overflow-x-clip">
-      <BackgroundGlow />
-      <div className="relative z-1 mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-3 sm:px-5 sm:py-5">
-        <motion.div
-          className="flex w-full flex-1 flex-col gap-3"
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-        >
-          <motion.header
-            variants={itemVariants}
-            aria-label="כותרת ופעולות"
-            className="flex flex-col gap-2"
+    <LazyMotion features={domAnimation} strict>
+      <div className="relative flex w-full flex-1 flex-col overflow-x-clip">
+        <BackgroundGlow />
+        <div className="relative z-1 mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-3 sm:px-5 sm:py-5">
+          <m.div
+            className="flex w-full flex-1 flex-col gap-3"
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
           >
-            <SheetToolbar
-              loading={loading}
-              onRefresh={() => void load(true)}
-              lastFetch={lastFetch}
-            />
-            <HomeSearchHeader />
-          </motion.header>
+            <m.header
+              variants={itemVariants}
+              aria-label="כותרת ופעולות"
+              className="flex flex-col gap-2"
+            >
+              <SheetToolbar
+                loading={loading}
+                onRefresh={() => void load(true)}
+                lastFetch={lastFetch}
+              />
+              <HomeSearchHeader />
+            </m.header>
 
-          <motion.div variants={itemVariants}>
-            <LoadErrorAlert message={loadError} />
-          </motion.div>
+            <m.div variants={itemVariants}>
+              <LoadErrorAlert message={loadError} />
+            </m.div>
 
-          <motion.div variants={itemVariants}>
-            <WarningsBanner warnings={warnings} />
-          </motion.div>
+            <m.div variants={itemVariants}>
+              <WarningsBanner warnings={warnings} />
+            </m.div>
 
-          <motion.div variants={itemVariants}>
-            <SearchAddressForm
-              street={street}
-              houseNumber={houseNumber}
-              area={area}
-              availableStreets={availableStreets}
-              availableHouseNumbers={availableHouseNumbers}
-              availableAreas={availableAreas}
-              onStreetChange={setStreet}
-              onHouseNumberChange={setHouseNumber}
-              onAreaChange={setArea}
-              onSubmit={handleFormSubmit}
-              onClear={handleClear}
-            />
-          </motion.div>
-        </motion.div>
+            <m.div variants={itemVariants}>
+              <SearchAddressForm
+                street={street}
+                houseNumber={houseNumber}
+                area={area}
+                availableStreets={availableStreets}
+                availableHouseNumbers={availableHouseNumbers}
+                availableAreas={availableAreas}
+                onStreetChange={setStreet}
+                onHouseNumberChange={setHouseNumber}
+                onAreaChange={setArea}
+                onSubmit={(e) => void handleFormSubmit(e)}
+                onClear={handleClear}
+                searching={searching}
+              />
+            </m.div>
+          </m.div>
 
-        <ResultModal
-          open={resultModalOpen}
-          onClose={closeModal}
-          closeButtonRef={closeButtonRef}
-          street={street}
-          houseNumber={houseNumber}
-          matches={matches}
-          copiedRowKey={copiedRowKey}
-          failedCopyKey={failedCopyKey}
-          onCopy={copyCode}
-        />
+          <ResultModal
+            open={resultModalOpen}
+            onClose={closeModal}
+            closeButtonRef={closeButtonRef}
+            street={street}
+            houseNumber={houseNumber}
+            matches={matches}
+            copiedRowKey={copiedRowKey}
+            failedCopyKey={failedCopyKey}
+            onCopy={copyCode}
+          />
+        </div>
       </div>
-    </div>
+    </LazyMotion>
   );
 }

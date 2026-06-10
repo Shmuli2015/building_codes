@@ -1,7 +1,7 @@
-import type { BuildingCodeRow } from "@/lib/building-codes";
+import type { SearchIndex } from "@/lib/search-index";
 
 export type CodesClientPayload = {
-  rows: BuildingCodeRow[];
+  index: SearchIndex;
   warnings: string[];
   source: "sheet" | "mock";
   cacheExpiresAt: number;
@@ -10,6 +10,11 @@ export type CodesClientPayload = {
 };
 
 export type ApiResponse = CodesClientPayload & { error?: string };
+
+export type SearchApiResponse = {
+  matches: import("@/lib/building-codes").BuildingCodeRow[];
+  error?: string;
+};
 
 export type HomeSearchProps = {
   initial: CodesClientPayload;

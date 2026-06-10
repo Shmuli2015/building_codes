@@ -1,3 +1,4 @@
+import { cacheLife, cacheTag } from "next/cache";
 import { google } from "googleapis";
 
 import {
@@ -80,6 +81,18 @@ async function fetchFromGoogleSheets(): Promise<{
   };
 }
 
+async function getCachedSheetData(): Promise<{
+  rows: BuildingCodeRow[];
+  warnings: string[];
+  source: "sheet" | "mock";
+}> {
+  "use cache";
+  cacheTag("codes");
+  cacheLife("minutes");
+
+  return fetchFromGoogleSheets();
+}
+
 type EmailCacheEntry = {
   emails: string[];
   expiresAt: number;
@@ -146,6 +159,15 @@ export async function getAuthorizedEmails(): Promise<string[]> {
 export async function getCodes(options: {
   bypassCache?: boolean;
 }): Promise<CachedCodesPayload> {
+  const { connection } = await import("next/server");
+  await connection();
+
+  if (options.bypassCache) {
+    const { revalidateTag } = await import("next/cache");
+    revalidateTag("codes", "max");
+    cache = null;
+  }
+
   const now = Date.now();
   const ttl = ttlMs();
 
@@ -159,7 +181,7 @@ export async function getCodes(options: {
     };
   }
 
-  const fresh = await fetchFromGoogleSheets();
+  const fresh = await getCachedSheetData();
   cache = {
     rows: fresh.rows,
     warnings: fresh.warnings,

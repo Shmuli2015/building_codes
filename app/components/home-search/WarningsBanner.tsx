@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 
 type Props = {
   warnings: string[];
@@ -10,7 +10,7 @@ export function WarningsBanner({ warnings }: Props) {
   return (
     <AnimatePresence mode="wait">
       {warnings.length > 0 ? (
-        <motion.ul
+        <m.ul
           key="warnings"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -19,7 +19,7 @@ export function WarningsBanner({ warnings }: Props) {
           className="space-y-1.5 overflow-hidden rounded-2xl border border-amber-200/90 bg-amber-50/95 px-4 py-3 text-sm text-amber-950 shadow-md shadow-amber-900/10"
         >
           {warnings.map((w, i) => (
-            <motion.li
+            <m.li
               key={i}
               initial={{ opacity: 0, x: 8 }}
               animate={{ opacity: 1, x: 0 }}
@@ -27,9 +27,9 @@ export function WarningsBanner({ warnings }: Props) {
               className="leading-relaxed"
             >
               {w}
-            </motion.li>
+            </m.li>
           ))}
-        </motion.ul>
+        </m.ul>
       ) : null}
     </AnimatePresence>
   );

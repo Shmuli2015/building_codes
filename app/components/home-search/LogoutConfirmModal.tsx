@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, m, useReducedMotion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -22,7 +22,7 @@ export function LogoutConfirmModal({ open, onClose, onConfirm }: Props) {
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <motion.button
+          <m.button
             type="button"
             aria-label="סגור"
             initial={{ opacity: 0 }}
@@ -31,7 +31,7 @@ export function LogoutConfirmModal({ open, onClose, onConfirm }: Props) {
             onClick={onClose}
             className="absolute inset-0 bg-slate-950/20 backdrop-blur-sm"
           />
-          <motion.div
+          <m.div
             role="dialog"
             aria-modal="true"
             aria-labelledby="logout-modal-title"
@@ -73,7 +73,7 @@ export function LogoutConfirmModal({ open, onClose, onConfirm }: Props) {
                 התנתק
               </button>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       )}
     </AnimatePresence>,

@@ -2,7 +2,7 @@
 
 import type { RefObject } from "react";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, m, useReducedMotion } from "framer-motion";
 import type { BuildingCodeRow } from "@/lib/building-codes";
 
 import { CloseIcon } from "./icons";
@@ -45,7 +45,7 @@ export function ResultModal({
   return (
     <AnimatePresence mode="wait">
       {open ? (
-        <motion.div
+        <m.div
           key="result-overlay"
           className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-5"
           role="presentation"
@@ -54,7 +54,7 @@ export function ResultModal({
           exit={{ opacity: 0 }}
           transition={backdropTransition}
         >
-          <motion.button
+          <m.button
             type="button"
             aria-label="סגור"
             className="absolute inset-0 bg-slate-950/55 backdrop-blur-md"
@@ -64,7 +64,7 @@ export function ResultModal({
             transition={backdropTransition}
             onClick={onClose}
           />
-          <motion.div
+          <m.div
             role="dialog"
             aria-modal="true"
             aria-labelledby="result-modal-title"
@@ -90,7 +90,7 @@ export function ResultModal({
               >
                 תוצאות חיפוש
               </h2>
-              <motion.button
+              <m.button
                 ref={closeButtonRef}
                 type="button"
                 onClick={onClose}
@@ -101,28 +101,28 @@ export function ResultModal({
                 aria-label="סגור חלון"
               >
                 <CloseIcon className="h-5 w-5" />
-              </motion.button>
+              </m.button>
             </div>
 
             <div className="max-h-[min(76dvh,32rem)] overflow-y-auto overscroll-contain px-4 py-5 sm:max-h-[min(calc(85vh-5rem),32rem)] sm:px-6">
               {!street.trim() || !houseNumber.trim() ? (
-                <motion.p
+                <m.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="rounded-2xl border border-slate-100 bg-slate-50/95 px-4 py-10 text-center text-sm font-medium leading-relaxed text-slate-600 sm:px-6"
                 >
                   נא למלא לפחות <strong>רחוב</strong> ו<strong>מספר בית</strong>{" "}
                   כדי לחפש.
-                </motion.p>
+                </m.p>
               ) : matches.length === 0 ? (
-                <motion.p
+                <m.p
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={panelTransition}
                   className="rounded-2xl border border-slate-200/80 bg-slate-50/90 px-4 py-9 text-center text-sm font-medium text-slate-600 sm:px-6"
                 >
                   לא נמצאה התאמה לכתובת זו ברשימה כרגע.
-                </motion.p>
+                </m.p>
               ) : (
                 <ul className="space-y-4">
                   {matches.map((row, idx) => {
@@ -141,8 +141,8 @@ export function ResultModal({
                 </ul>
               )}
             </div>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       ) : null}
     </AnimatePresence>
   );

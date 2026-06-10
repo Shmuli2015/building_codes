@@ -1,6 +1,9 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { m, useReducedMotion } from "framer-motion";
+import { useMemo } from "react";
+
+import { capDatalistOptions } from "@/lib/search-index";
 
 import { ADDRESS_INPUT_CLASS } from "./constants";
 
@@ -14,8 +17,9 @@ type Props = {
   onStreetChange: (value: string) => void;
   onHouseNumberChange: (value: string) => void;
   onAreaChange: (value: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: React.SubmitEventHandler<HTMLFormElement>;
   onClear: () => void;
+  searching?: boolean;
 };
 
 export function SearchAddressForm({
@@ -30,15 +34,29 @@ export function SearchAddressForm({
   onAreaChange,
   onSubmit,
   onClear,
+  searching = false,
 }: Props) {
   const reduceMotion = useReducedMotion();
 
-  const isSubmitDisabled = !street.trim() || !houseNumber.trim();
+  const streetOptions = useMemo(
+    () => capDatalistOptions(availableStreets, street),
+    [availableStreets, street],
+  );
+  const houseNumberOptions = useMemo(
+    () => capDatalistOptions(availableHouseNumbers, houseNumber),
+    [availableHouseNumbers, houseNumber],
+  );
+  const areaOptions = useMemo(
+    () => capDatalistOptions(availableAreas, area),
+    [availableAreas, area],
+  );
+
+  const isSubmitDisabled = !street.trim() || !houseNumber.trim() || searching;
 
   return (
-    <motion.form
+    <m.form
       onSubmit={onSubmit}
-      className="rounded-2xl border border-white/60 bg-linear-to-b from-(--surface-strong) via-white/[0.93] to-white/88 p-4 shadow-[var(--shadow-card)] ring-1 ring-slate-900/[0.04] backdrop-blur-xl sm:p-6"
+      className="rounded-2xl border border-white/60 bg-linear-to-b from-(--surface-strong) via-white/93 to-white/88 p-4 shadow-(--shadow-card) ring-1 ring-slate-900/4 backdrop-blur-xl sm:p-6"
       whileHover={
         reduceMotion ? undefined : { boxShadow: "var(--shadow-card), 0 18px 50px -24px rgba(37,99,235,0.15)" }
       }
@@ -58,7 +76,7 @@ export function SearchAddressForm({
             list="streets-list"
           />
           <datalist id="streets-list">
-            {availableStreets.map((s) => (
+            {streetOptions.map((s) => (
               <option key={s} value={s} />
             ))}
           </datalist>
@@ -77,7 +95,7 @@ export function SearchAddressForm({
             list="house-numbers-list"
           />
           <datalist id="house-numbers-list">
-            {availableHouseNumbers.map((n) => (
+            {houseNumberOptions.map((n) => (
               <option key={n} value={n} />
             ))}
           </datalist>
@@ -94,23 +112,23 @@ export function SearchAddressForm({
             list="areas-list"
           />
           <datalist id="areas-list">
-            {availableAreas.map((a) => (
+            {areaOptions.map((a) => (
               <option key={a} value={a} />
             ))}
           </datalist>
         </label>
       </div>
       <div className="mt-6 flex flex-col items-center gap-3">
-        <motion.button
+        <m.button
           type="submit"
           disabled={isSubmitDisabled}
           whileHover={reduceMotion || isSubmitDisabled ? undefined : { scale: 1.01 }}
           whileTap={reduceMotion || isSubmitDisabled ? undefined : { scale: 0.99 }}
           transition={{ type: "spring", stiffness: 500, damping: 28 }}
-          className="relative min-h-[3.125rem] w-full overflow-hidden rounded-2xl bg-linear-to-l from-blue-600 via-indigo-600 to-blue-700 px-5 py-[0.9rem] text-base font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.2)_inset,0_12px_36px_-12px_rgba(37,99,235,0.45)] ring-1 ring-white/25 outline-none hover:brightness-[1.04] active:brightness-[0.97] disabled:cursor-not-allowed disabled:opacity-50 disabled:grayscale-[0.3] md:py-4"
+          className="relative min-h-12.5 w-full overflow-hidden rounded-2xl bg-linear-to-l from-blue-600 via-indigo-600 to-blue-700 px-5 py-[0.9rem] text-base font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.2)_inset,0_12px_36px_-12px_rgba(37,99,235,0.45)] ring-1 ring-white/25 outline-none hover:brightness-[1.04] active:brightness-[0.97] disabled:cursor-not-allowed disabled:opacity-50 disabled:grayscale-[0.3] md:py-4"
         >
-          הצג קוד כניסה
-        </motion.button>
+          {searching ? "מחפש…" : "הצג קוד כניסה"}
+        </m.button>
 
         <button
           type="button"
@@ -120,6 +138,6 @@ export function SearchAddressForm({
           נקה הכל
         </button>
       </div>
-    </motion.form>
+    </m.form>
   );
 }

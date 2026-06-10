@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { m, useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 
 import { formatRelativeTimeHe } from "@/lib/relative-time-he";
@@ -40,7 +40,7 @@ export function SheetToolbar({ loading, onRefresh, lastFetch }: Props) {
   return (
     <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-200/60 bg-white/60 px-2.5 py-1.5 shadow-[var(--shadow-card)] ring-1 ring-white/50 backdrop-blur-md sm:gap-3 sm:px-3">
       <div className="flex min-w-0 items-center gap-2">
-        <motion.button
+        <m.button
           type="button"
           onClick={onRefresh}
           disabled={loading}
@@ -49,7 +49,7 @@ export function SheetToolbar({ loading, onRefresh, lastFetch }: Props) {
           transition={{ type: "spring", stiffness: 420, damping: 28 }}
           className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200/90 bg-white/70 px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-sm backdrop-blur-sm transition-colors hover:border-slate-300 hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <motion.span
+          <m.span
             className="inline-flex text-blue-600"
             animate={loading && !reduceMotion ? { rotate: 360 } : { rotate: 0 }}
             transition={
@@ -59,9 +59,9 @@ export function SheetToolbar({ loading, onRefresh, lastFetch }: Props) {
             }
           >
             <RefreshIcon className="h-3.5 w-3.5 shrink-0" />
-          </motion.span>
+          </m.span>
           {loading ? "טוען…" : "רענון"}
-        </motion.button>
+        </m.button>
 
         <div
           className="flex min-w-0 items-center gap-1.5 rounded-full border border-slate-200/70 bg-slate-50/80 px-2.5 py-1 text-xs text-slate-600"
@@ -72,7 +72,7 @@ export function SheetToolbar({ loading, onRefresh, lastFetch }: Props) {
             aria-hidden
           />
           {lastFetch ? (
-            <motion.time
+            <m.time
               dateTime={lastFetch}
               title={absoluteTitle}
               className="truncate"
@@ -81,14 +81,14 @@ export function SheetToolbar({ loading, onRefresh, lastFetch }: Props) {
               transition={{ duration: 0.3 }}
             >
               עודכן {relativeLabel}
-            </motion.time>
+            </m.time>
           ) : (
             <span className="truncate">ממתין לעדכון</span>
           )}
         </div>
       </div>
 
-      <motion.button
+      <m.button
         type="button"
         onClick={() => setIsLogoutConfirmOpen(true)}
         whileHover={reduceMotion ? undefined : { scale: 1.02 }}
@@ -99,7 +99,7 @@ export function SheetToolbar({ loading, onRefresh, lastFetch }: Props) {
       >
         <LogOutIcon className="h-3.5 w-3.5 shrink-0" />
         <span className="hidden sm:inline">יציאה</span>
-      </motion.button>
+      </m.button>
 
       <LogoutConfirmModal
         open={isLogoutConfirmOpen}

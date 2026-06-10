@@ -2,7 +2,7 @@
 
 import type { BuildingCodeRow } from "@/lib/building-codes";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { m, useReducedMotion } from "framer-motion";
 
 import { springSnappy } from "./motion-config";
 import { CopyIcon } from "./icons";
@@ -25,7 +25,7 @@ export function ResultMatchCard({
   const reduceMotion = useReducedMotion();
 
   return (
-    <motion.li
+    <m.li
       layout
       initial={
         reduceMotion ? { opacity: 0 } : { opacity: 0, y: 20, scale: 0.97 }
@@ -44,7 +44,7 @@ export function ResultMatchCard({
           {row.street} {row.number}
         </p>
         <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-stretch sm:justify-between sm:gap-4">
-          <motion.p
+          <m.p
             className="min-w-0 break-all font-mono text-3xl font-bold tracking-[0.15em] text-slate-900 sm:text-4xl"
             initial={reduceMotion ? false : { scale: 0.92, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -54,8 +54,8 @@ export function ResultMatchCard({
             }}
           >
             {row.code}
-          </motion.p>
-          <motion.button
+          </m.p>
+          <m.button
             type="button"
             onClick={onCopy}
             whileHover={reduceMotion ? undefined : { scale: 1.03 }}
@@ -70,7 +70,7 @@ export function ResultMatchCard({
             }`}
             aria-label="העתקת הקוד ללוח ההדבקה"
           >
-            <motion.span
+            <m.span
               className="inline-flex"
               animate={
                 copied && !reduceMotion ? { scale: [1, 1.15, 1] } : {}
@@ -78,12 +78,12 @@ export function ResultMatchCard({
               transition={{ duration: 0.4 }}
             >
               <CopyIcon className="h-4 w-4 shrink-0" />
-            </motion.span>
+            </m.span>
             {copied ? "הועתק ללוח" : copyFailed ? "ההעתקה נכשלה" : "העתק ללוח"}
-          </motion.button>
+          </m.button>
         </div>
         {(row.kind || row.note) && (
-          <motion.div
+          <m.div
             className="mt-3 flex flex-wrap gap-2"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -97,9 +97,9 @@ export function ResultMatchCard({
             {row.note ? (
               <span className="text-sm text-slate-600">{row.note}</span>
             ) : null}
-          </motion.div>
+          </m.div>
         )}
       </div>
-    </motion.li>
+    </m.li>
   );
 }
