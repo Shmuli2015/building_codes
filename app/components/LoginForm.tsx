@@ -3,9 +3,11 @@
 import { useState, useTransition } from "react";
 import { login } from "@/lib/auth-actions";
 import { motion, AnimatePresence } from "framer-motion";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   async function handleSubmit(formData: FormData) {
@@ -58,23 +60,39 @@ export default function LoginForm() {
           <input
             name="email"
             type="email"
+            autoComplete="email"
             required
             dir="ltr"
             placeholder="email@example.com"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
+            className="form-input w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50"
           />
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-700 block mr-1">סיסמה</label>
-          <input
-            name="password"
-            type="password"
-            required
-            dir="ltr"
-            placeholder="••••••••"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
-          />
+          <div className="relative">
+            <input
+              name="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              required
+              dir="ltr"
+              placeholder="••••••••"
+              className="form-input w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pr-12 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors"
+              aria-label={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
+            >
+              {showPassword ? (
+                <EyeOff className="w-5 h-5" />
+              ) : (
+                <Eye className="w-5 h-5" />
+              )}
+            </button>
+          </div>
         </div>
 
         <AnimatePresence mode="wait">
