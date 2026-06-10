@@ -1,6 +1,7 @@
 {
   "name": "building_codes",
   "version": "0.1.0",
+  "author": "Shmuel Rosenberg",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -13,7 +14,7 @@
     "googleapis": "^171.4.0",
     "jose": "^6.2.3",
     "lucide-react": "^1.17.0",
-    "next": "16.2.6",
+    "next": "^16.2.9",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
@@ -23,7 +24,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.6",
+    "eslint-config-next": "^16.2.9",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
