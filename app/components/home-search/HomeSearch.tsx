@@ -150,16 +150,17 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
   return (
     <div className="relative flex w-full flex-1 flex-col overflow-x-clip">
       <BackgroundGlow />
-      <div className="relative z-[1] mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-4 sm:px-5 sm:py-6 md:py-8">
+      <div className="relative z-1 mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-3 sm:px-5 sm:py-5">
         <motion.div
-          className="flex w-full flex-1 flex-col gap-4"
+          className="flex w-full flex-1 flex-col gap-3"
           variants={containerVariants}
           initial="hidden"
           animate="show"
         >
-          <motion.div
+          <motion.header
             variants={itemVariants}
-            className="flex flex-col gap-1 sm:gap-1.5"
+            aria-label="כותרת ופעולות"
+            className="flex flex-col gap-2"
           >
             <SheetToolbar
               loading={loading}
@@ -167,7 +168,7 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
               lastFetch={lastFetch}
             />
             <HomeSearchHeader />
-          </motion.div>
+          </motion.header>
 
           <motion.div variants={itemVariants}>
             <LoadErrorAlert message={loadError} />
