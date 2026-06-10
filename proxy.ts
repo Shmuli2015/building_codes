@@ -12,7 +12,7 @@ const SECRET = new TextEncoder().encode(ADMIN_PASSWORD);
 
 const COOKIE_NAME = "auth_session";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
 
