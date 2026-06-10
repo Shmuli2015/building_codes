@@ -9,6 +9,7 @@ type Props = {
   houseNumber: string;
   area: string;
   availableStreets?: string[];
+  availableHouseNumbers?: string[];
   availableAreas?: string[];
   onStreetChange: (value: string) => void;
   onHouseNumberChange: (value: string) => void;
@@ -22,6 +23,7 @@ export function SearchAddressForm({
   houseNumber,
   area,
   availableStreets = [],
+  availableHouseNumbers = [],
   availableAreas = [],
   onStreetChange,
   onHouseNumberChange,
@@ -36,7 +38,7 @@ export function SearchAddressForm({
   return (
     <motion.form
       onSubmit={onSubmit}
-      className="rounded-[var(--radius-2xl)] border border-white/60 bg-linear-to-b from-[var(--surface-strong)] via-white/[0.93] to-white/88 p-4 shadow-[var(--shadow-card)] ring-1 ring-slate-900/[0.04] backdrop-blur-xl sm:p-6"
+      className="rounded-2xl border border-white/60 bg-linear-to-b from-(--surface-strong) via-white/[0.93] to-white/88 p-4 shadow-[var(--shadow-card)] ring-1 ring-slate-900/[0.04] backdrop-blur-xl sm:p-6"
       whileHover={
         reduceMotion ? undefined : { boxShadow: "var(--shadow-card), 0 18px 50px -24px rgba(37,99,235,0.15)" }
       }
@@ -71,7 +73,14 @@ export function SearchAddressForm({
             placeholder="למשל: 7"
             className={ADDRESS_INPUT_CLASS}
             dir="rtl"
+            autoComplete="off"
+            list="house-numbers-list"
           />
+          <datalist id="house-numbers-list">
+            {availableHouseNumbers.map((n) => (
+              <option key={n} value={n} />
+            ))}
+          </datalist>
         </label>
         <label className="flex flex-col gap-2 text-sm">
           <span className="font-medium text-slate-700">שכונה (אופציונלי)</span>

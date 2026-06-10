@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { BuildingCodeRow } from "@/lib/building-codes";
-import { filterRows } from "@/lib/normalize";
+import { filterRows, streetMatches } from "@/lib/normalize";
 
 import { BackgroundGlow } from "./BackgroundGlow";
 import { HomeSearchHeader } from "./HomeSearchHeader";
@@ -73,6 +73,22 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
     });
     return Array.from(s).sort();
   }, [rows]);
+
+  const availableHouseNumbers = useMemo(() => {
+    if (!street.trim()) return [];
+    const s = new Set<string>();
+    rows.forEach((r) => {
+      if (r.number && streetMatches(street, r.street)) {
+        s.add(r.number);
+      }
+    });
+    return Array.from(s).sort((a, b) => {
+      const na = Number(a);
+      const nb = Number(b);
+      if (!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb;
+      return a.localeCompare(b, "he");
+    });
+  }, [rows, street]);
 
   useEffect(() => {
     return () => {
@@ -184,6 +200,7 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
               houseNumber={houseNumber}
               area={area}
               availableStreets={availableStreets}
+              availableHouseNumbers={availableHouseNumbers}
               availableAreas={availableAreas}
               onStreetChange={setStreet}
               onHouseNumberChange={setHouseNumber}
