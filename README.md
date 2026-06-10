@@ -32,15 +32,38 @@ Open [http://localhost:3000](http://localhost:3000) to see the result.
 
 ## Spreadsheet Configuration
 
-The application expects two main data sources in your Google Sheet:
+The application expects two tabs in the same Google Spreadsheet. Share the sheet with your service account email (Editor or Viewer).
 
-### 1. Building Codes (Main Tab)
-- Default tab name: `גיליון1` (Override with `GOOGLE_SHEET_RANGE`).
-- Expected columns: `area`, `street`, `number`, `code`, `kind`, `note` (mapping is flexible, see `lib/building-codes.ts`).
+### 1. Building Codes (main tab)
 
-### 2. Authorized Emails (Auth Tab)
-- Default tab name: `מורשים` (Override with `GOOGLE_SHEET_AUTH_RANGE`).
-- Expects a list of emails in the first column (Column A).
+- **Tab name:** `גיליון1` (override with `GOOGLE_SHEET_RANGE`, e.g. `Sheet1!A:F`)
+- **Range:** `A:F` — row 1 is headers, data starts at row 2
+- **Empty rows** are skipped
+
+| Column | Header (Hebrew) | Header (English) | Field | Required |
+|--------|-----------------|------------------|-------|----------|
+| A | שכונה / אזור | area | Neighborhood / area | No |
+| B | כתובת / רחוב | street | Street name | **Yes** |
+| C | מספר | number | Building number | **Yes** |
+| D | סוג / סוג קוד | kind | Code type (e.g. קוד, מפתח) | No |
+| E | קוד | code | Entry code | **Yes** |
+| F | הערה | note | Notes | No |
+
+**Example (row 1 = headers):**
+
+| A | B | C | D | E | F |
+|---|---|---|---|---|---|
+| שכונה | כתובת | מספר | סוג | קוד | הערה |
+| וותיקה | העלייה | 3 | מפתח | 1417 | |
+| וותיקה | ינאי | 3 | קוד | 3131 | |
+
+Header labels are flexible: Hebrew or English aliases are accepted (see `lib/building-codes.ts`). Each logical field is mapped once from the header row — duplicate columns for the same field are ignored.
+
+### 2. Authorized Emails (auth tab)
+
+- **Tab name:** `מורשים` (override with `GOOGLE_SHEET_AUTH_RANGE`)
+- **Range:** `A:A` — one authorized email per cell
+- **No header row** — put emails starting at row 1 (every non-empty value in column A is treated as an allowed login email)
 
 ## Environment Variables
 
