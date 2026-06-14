@@ -19,23 +19,30 @@ export function SheetToolbar({ loading, onRefresh, lastFetch }: Props) {
   const reduceMotion = useReducedMotion();
   const [relativeTick, setRelativeTick] = useState(0);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const id = window.setInterval(() => setRelativeTick((n) => n + 1), 30_000);
     return () => window.clearInterval(id);
   }, []);
 
   const relativeLabel = useMemo(
-    () => (lastFetch ? formatRelativeTimeHe(lastFetch) : ""),
-    [lastFetch, relativeTick],
+    () => (lastFetch && mounted ? formatRelativeTimeHe(lastFetch) : ""),
+    [lastFetch, relativeTick, mounted],
   );
 
-  const absoluteTitle = lastFetch
-    ? new Date(lastFetch).toLocaleString("he-IL", {
+  const absoluteTitle = useMemo(() => {
+    if (!lastFetch || !mounted) return undefined;
+    try {
+      return new Date(lastFetch).toLocaleString("he-IL", {
         dateStyle: "short",
         timeStyle: "short",
-      })
-    : undefined;
+      });
+    } catch {
+      return undefined;
+    }
+  }, [lastFetch, mounted]);
 
   return (
     <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-200/60 bg-white/60 px-2.5 py-1.5 shadow-[var(--shadow-card)] ring-1 ring-white/50 backdrop-blur-md sm:gap-3 sm:px-3">
@@ -71,7 +78,7 @@ export function SheetToolbar({ loading, onRefresh, lastFetch }: Props) {
             className={`h-1.5 w-1.5 shrink-0 rounded-full ${lastFetch ? "bg-emerald-500" : "bg-slate-300"}`}
             aria-hidden
           />
-          {lastFetch ? (
+          {lastFetch && mounted ? (
             <m.time
               dateTime={lastFetch}
               title={absoluteTitle}
@@ -83,7 +90,9 @@ export function SheetToolbar({ loading, onRefresh, lastFetch }: Props) {
               עודכן {relativeLabel}
             </m.time>
           ) : (
-            <span className="truncate">ממתין לעדכון</span>
+            <span className="truncate">
+              {lastFetch ? "טוען..." : "ממתין לעדכון"}
+            </span>
           )}
         </div>
       </div>

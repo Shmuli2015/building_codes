@@ -4,8 +4,7 @@ import { m, useReducedMotion } from "framer-motion";
 import { useMemo } from "react";
 
 import { capDatalistOptions } from "@/lib/search-index";
-
-import { ADDRESS_INPUT_CLASS } from "./constants";
+import { AutocompleteInput } from "./AutocompleteInput";
 
 type Props = {
   street: string;
@@ -63,60 +62,29 @@ export function SearchAddressForm({
       transition={{ type: "spring", stiffness: 300, damping: 35 }}
     >
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-2 text-sm sm:col-span-2">
-          <span className="font-semibold text-slate-800">רחוב</span>
-          <input
-            type="text"
-            value={street}
-            onChange={(e) => onStreetChange(e.target.value)}
-            placeholder="למשל: העלייה, רבי ינאי…"
-            className={ADDRESS_INPUT_CLASS}
-            dir="rtl"
-            autoComplete="off"
-            list="streets-list"
-          />
-          <datalist id="streets-list">
-            {streetOptions.map((s) => (
-              <option key={s} value={s} />
-            ))}
-          </datalist>
-        </label>
-        <label className="flex flex-col gap-2 text-sm">
-          <span className="font-semibold text-slate-800">מספר בית</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={houseNumber}
-            onChange={(e) => onHouseNumberChange(e.target.value)}
-            placeholder="למשל: 7"
-            className={ADDRESS_INPUT_CLASS}
-            dir="rtl"
-            autoComplete="off"
-            list="house-numbers-list"
-          />
-          <datalist id="house-numbers-list">
-            {houseNumberOptions.map((n) => (
-              <option key={n} value={n} />
-            ))}
-          </datalist>
-        </label>
-        <label className="flex flex-col gap-2 text-sm">
-          <span className="font-medium text-slate-700">שכונה (אופציונלי)</span>
-          <input
-            type="text"
-            value={area}
-            onChange={(e) => onAreaChange(e.target.value)}
-            placeholder="אם צריך לצמצם התאמות"
-            className={ADDRESS_INPUT_CLASS}
-            dir="rtl"
-            list="areas-list"
-          />
-          <datalist id="areas-list">
-            {areaOptions.map((a) => (
-              <option key={a} value={a} />
-            ))}
-          </datalist>
-        </label>
+        <AutocompleteInput
+          label="רחוב"
+          value={street}
+          onChange={onStreetChange}
+          options={streetOptions}
+          placeholder="למשל: העלייה, רבי ינאי…"
+          className="sm:col-span-2"
+        />
+        <AutocompleteInput
+          label="מספר בית"
+          value={houseNumber}
+          onChange={onHouseNumberChange}
+          options={houseNumberOptions}
+          placeholder="למשל: 7"
+          inputMode="numeric"
+        />
+        <AutocompleteInput
+          label="שכונה (אופציונלי)"
+          value={area}
+          onChange={onAreaChange}
+          options={areaOptions}
+          placeholder="אם צריך לצמצם התאמות"
+        />
       </div>
       <div className="mt-6 flex flex-col items-center gap-3">
         <m.button
