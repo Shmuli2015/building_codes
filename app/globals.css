@@ -40,7 +40,6 @@
   --font-sans: var(--font-hebrew), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Display headings (paired with Next font variable --font-display on <html>) */
 .font-display {
   font-family:
     var(--font-display),

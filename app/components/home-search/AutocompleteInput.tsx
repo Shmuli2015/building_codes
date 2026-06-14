@@ -39,7 +39,6 @@ export function AutocompleteInput({
   const listboxId = useId();
   const ignoreNextFocus = useRef(false);
 
-  // Reset highlighted index when options change or dropdown closes/opens
   const [prevOptions, setPrevOptions] = useState<string[]>(options);
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
@@ -49,7 +48,6 @@ export function AutocompleteInput({
     setHighlightedIndex(-1);
   }
 
-  // Click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       if (
@@ -67,7 +65,6 @@ export function AutocompleteInput({
     };
   }, []);
 
-  // Keep highlighted item visible on scroll
   useEffect(() => {
     if (highlightedIndex >= 0 && listRef.current) {
       const activeEl = listRef.current.children[highlightedIndex] as HTMLElement;
@@ -163,7 +160,7 @@ export function AutocompleteInput({
           }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`${ADDRESS_INPUT_CLASS} pl-10`} // extra left padding for chevron icon
+          className={`${ADDRESS_INPUT_CLASS} pl-10`}
           dir={dir}
           autoComplete={autoComplete}
           required={required}
@@ -172,8 +169,6 @@ export function AutocompleteInput({
           aria-autocomplete="list"
           aria-controls={listboxId}
         />
-        
-        {/* Dropdown toggle button on the left edge for RTL */}
         <button
           type="button"
           onClick={() => {
@@ -202,8 +197,6 @@ export function AutocompleteInput({
             <polyline points="6 9 12 15 18 9" />
           </svg>
         </button>
-
-        {/* Suggestions list */}
         <AnimatePresence>
           {isOpen && options.length > 0 && (
             <m.ul

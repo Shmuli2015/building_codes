@@ -121,11 +121,8 @@ async function fetchFromGoogleSheets(bypassCache = false): Promise<{
     }
   }
 
-  // Fetch fresh data
   try {
     const fresh = await fetchFromGoogleSheetsRaw();
-    
-    // Save to cache file
     try {
       fs.mkdirSync(path.dirname(CACHE_FILE_PATH), { recursive: true });
       fs.writeFileSync(
@@ -144,7 +141,6 @@ async function fetchFromGoogleSheets(bypassCache = false): Promise<{
 
     return fresh;
   } catch (err) {
-    // If fetching failed, try to fallback to expired cache if available
     try {
       if (fs.existsSync(CACHE_FILE_PATH)) {
         const fileContent = fs.readFileSync(CACHE_FILE_PATH, "utf8");
@@ -157,7 +153,6 @@ async function fetchFromGoogleSheets(bypassCache = false): Promise<{
         };
       }
     } catch {
-      // ignore
     }
     throw err;
   }

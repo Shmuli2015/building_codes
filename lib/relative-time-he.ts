@@ -1,8 +1,5 @@
 const rtf = new Intl.RelativeTimeFormat("he", { numeric: "auto" });
 
-/**
- * Hebrew relative time (e.g. "לפני 4 דקות", "לפני שבוע", "אתמול") from an ISO string or Date.
- */
 export function formatRelativeTimeHe(
   input: string | Date,
   nowMs: number = Date.now(),
