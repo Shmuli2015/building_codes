@@ -14,9 +14,16 @@ type Props = {
   onRefresh: () => void;
   lastFetch: string | null;
   onAddCodeClick?: () => void;
+  onAddAuthorizedClick?: () => void;
 };
 
-export function SheetToolbar({ loading, onRefresh, lastFetch, onAddCodeClick }: Props) {
+export function SheetToolbar({
+  loading,
+  onRefresh,
+  lastFetch,
+  onAddCodeClick,
+  onAddAuthorizedClick,
+}: Props) {
   const reduceMotion = useReducedMotion();
   const [relativeTick, setRelativeTick] = useState(0);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
@@ -82,6 +89,20 @@ export function SheetToolbar({ loading, onRefresh, lastFetch, onAddCodeClick }: 
           >
             <span className="text-sm font-bold leading-none">+</span>
             <span>הוספה</span>
+          </m.button>
+        )}
+
+        {onAddAuthorizedClick && (
+          <m.button
+            type="button"
+            onClick={onAddAuthorizedClick}
+            whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+            whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 420, damping: 28 }}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-indigo-100 bg-indigo-50/50 px-2.5 py-1.5 text-xs font-medium text-indigo-700 shadow-sm backdrop-blur-sm transition-colors hover:border-indigo-200 hover:bg-indigo-50"
+          >
+            <span className="text-sm font-bold leading-none">+</span>
+            <span>מורשה</span>
           </m.button>
         )}
 

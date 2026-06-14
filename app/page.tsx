@@ -2,11 +2,15 @@ import { Suspense } from "react";
 
 
 import { getCodes } from "@/lib/sheet-cache";
+import { getSession } from "@/lib/auth-actions";
 
 import HomeSearch from "./components/HomeSearch";
 
 async function HomeSearchLoader() {
-  const data = await getCodes({ bypassCache: false });
+  const [data, session] = await Promise.all([
+    getCodes({ bypassCache: false }),
+    getSession(),
+  ]);
   const initial = {
     index: data.index,
     warnings: data.warnings,
@@ -20,6 +24,8 @@ async function HomeSearchLoader() {
     <HomeSearch
       initial={initial}
       addCodeEnabled={Boolean(process.env.ADD_CODE_PASSWORD)}
+      addAuthorizedEnabled={Boolean(process.env.ADD_AUTHORIZED_PASSWORD)}
+      currentUserEmail={session?.email ?? null}
     />
   );
 }

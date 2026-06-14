@@ -33,7 +33,20 @@ const AddCodeModal = dynamic(
   { ssr: false },
 );
 
-export default function HomeSearch({ initial, addCodeEnabled }: HomeSearchProps) {
+const AddAuthorizedModal = dynamic(
+  () =>
+    import("./AddAuthorizedModal").then((mod) => ({
+      default: mod.AddAuthorizedModal,
+    })),
+  { ssr: false },
+);
+
+export default function HomeSearch({
+  initial,
+  addCodeEnabled,
+  addAuthorizedEnabled,
+  currentUserEmail,
+}: HomeSearchProps) {
   const reduceMotion = useReducedMotion();
   const [street, setStreet] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
@@ -46,6 +59,7 @@ export default function HomeSearch({ initial, addCodeEnabled }: HomeSearchProps)
   const [lastFetch, setLastFetch] = useState<string | null>(initial.fetchedAt);
   const [resultModalOpen, setResultModalOpen] = useState(false);
   const [addCodeModalOpen, setAddCodeModalOpen] = useState(false);
+  const [addAuthorizedModalOpen, setAddAuthorizedModalOpen] = useState(false);
   const [matches, setMatches] = useState<BuildingCodeRow[]>([]);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [copiedRowKey, setCopiedRowKey] = useState<string | null>(null);
@@ -203,6 +217,11 @@ export default function HomeSearch({ initial, addCodeEnabled }: HomeSearchProps)
                     ? () => setAddCodeModalOpen(true)
                     : undefined
                 }
+                onAddAuthorizedClick={
+                  addAuthorizedEnabled
+                    ? () => setAddAuthorizedModalOpen(true)
+                    : undefined
+                }
               />
               <HomeSearchHeader />
             </m.header>
@@ -251,6 +270,13 @@ export default function HomeSearch({ initial, addCodeEnabled }: HomeSearchProps)
             availableStreets={availableStreets}
             availableAreas={availableAreas}
             onSuccess={() => void load(true)}
+          />
+          <AddAuthorizedModal
+            open={addAuthorizedModalOpen}
+            onClose={() => setAddAuthorizedModalOpen(false)}
+            addAuthorizedEnabled={addAuthorizedEnabled}
+            currentUserEmail={currentUserEmail}
+            onSuccess={() => {}}
           />
         </div>
       </div>

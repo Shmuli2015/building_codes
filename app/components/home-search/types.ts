@@ -19,5 +19,7 @@ export type SearchApiResponse = {
 export type HomeSearchProps = {
   initial: CodesClientPayload;
   addCodeEnabled?: boolean;
+  addAuthorizedEnabled?: boolean;
+  currentUserEmail?: string | null;
 };
 

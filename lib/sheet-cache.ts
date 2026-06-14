@@ -11,7 +11,108 @@ import {
 import { buildSearchIndex, type SearchIndex } from "./search-index";
 
 const DEFAULT_RANGE = "גיליון1!A:F";
+const DEFAULT_AUTH_RANGE = "מורשים!A:B";
 const DEFAULT_TTL_MS = 180_000;
+
+export type AuthorizedUser = {
+  email: string;
+  name: string;
+};
+
+export type AuthColumnLayout = {
+  emailCol: number;
+  nameCol: number;
+};
+
+function authSheetRange(): string {
+  return process.env.GOOGLE_SHEET_AUTH_RANGE?.trim() || DEFAULT_AUTH_RANGE;
+}
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+export function resolveAuthColumns(header: string[]): AuthColumnLayout {
+  let emailCol = -1;
+  let nameCol = -1;
+
+  header.forEach((cell, index) => {
+    const normalized = cell.trim().toLowerCase().replace(/\s+/g, " ");
+
+    if (
+      emailCol < 0 &&
+      (normalized.includes("אימייל") ||
+        normalized.includes("מייל") ||
+        normalized.includes("email") ||
+        normalized === "mail")
+    ) {
+      emailCol = index;
+    }
+
+    if (
+      nameCol < 0 &&
+      !normalized.includes("אימייל") &&
+      !normalized.includes("מייל") &&
+      !normalized.includes("email") &&
+      (normalized.includes("שם") || normalized.includes("name"))
+    ) {
+      nameCol = index;
+    }
+  });
+
+  // A = אימייל, B = שם
+  if (emailCol < 0) emailCol = 0;
+  if (nameCol < 0) nameCol = 1;
+
+  return { emailCol, nameCol };
+}
+
+export function buildAuthSheetRow(
+  email: string,
+  name: string,
+  layout: AuthColumnLayout,
+): string[] {
+  const maxCol = Math.max(layout.emailCol, layout.nameCol);
+  const row = Array.from({ length: maxCol + 1 }, () => "");
+  row[layout.emailCol] = email;
+  row[layout.nameCol] = name;
+  return row;
+}
+
+export function getEmailFromAuthRow(
+  row: string[],
+  layout: AuthColumnLayout,
+): string {
+  return String(row[layout.emailCol] ?? "").trim().toLowerCase();
+}
+
+export function normalizeAuthSheetRow(
+  row: string[],
+  layout: AuthColumnLayout,
+): string[] {
+  return buildAuthSheetRow(
+    getEmailFromAuthRow(row, layout),
+    String(row[layout.nameCol] ?? "").trim(),
+    layout,
+  );
+}
+
+export function parseAuthorizedSheetRows(
+  values: string[][] | null | undefined,
+): AuthorizedUser[] {
+  if (!values?.length) return [];
+
+  const header = values[0].map((cell) => String(cell).trim());
+  const layout = resolveAuthColumns(header);
+
+  return values
+    .slice(1)
+    .map((row) => ({
+      email: getEmailFromAuthRow(row, layout),
+      name: String(row[layout.nameCol] ?? "").trim(),
+    }))
+    .filter((user) => user.email && isValidEmail(user.email));
+}
 
 type CacheEntry = {
   rows: BuildingCodeRow[];
@@ -192,18 +293,22 @@ async function getCachedSheetData(bypassCache = false): Promise<{
 }
 
 type EmailCacheEntry = {
-  emails: string[];
+  users: AuthorizedUser[];
   expiresAt: number;
 };
 
 let emailCache: EmailCacheEntry | null = null;
 
-export async function getAuthorizedEmails(): Promise<string[]> {
+export function clearEmailCache() {
+  emailCache = null;
+}
+
+export async function getAuthorizedUsers(): Promise<AuthorizedUser[]> {
   const now = Date.now();
   const ttl = ttlMs();
 
   if (emailCache && emailCache.expiresAt > now) {
-    return emailCache.emails;
+    return emailCache.users;
   }
 
   const sheetId = process.env.GOOGLE_SHEET_ID;
@@ -211,9 +316,11 @@ export async function getAuthorizedEmails(): Promise<string[]> {
 
   if (!sheetId?.trim() || !jsonRaw?.trim()) {
     const devEmail = process.env.AUTH_ALLOWLIST_DEV_EMAIL || "";
-    const emails = [devEmail.toLowerCase()].filter(Boolean);
-    emailCache = { emails, expiresAt: now + ttl };
-    return emails;
+    const users = devEmail
+      ? [{ email: devEmail.toLowerCase(), name: "" }]
+      : [];
+    emailCache = { users, expiresAt: now + ttl };
+    return users;
   }
 
   let credentials: Record<string, unknown>;
@@ -229,7 +336,7 @@ export async function getAuthorizedEmails(): Promise<string[]> {
   });
 
   const sheets = google.sheets({ version: "v4", auth });
-  const range = process.env.GOOGLE_SHEET_AUTH_RANGE?.trim() || "מורשים!A:A";
+  const range = authSheetRange();
 
   try {
     const res = await sheets.spreadsheets.values.get({
@@ -237,20 +344,19 @@ export async function getAuthorizedEmails(): Promise<string[]> {
       range,
     });
 
-    const values = res.data.values;
-    const emails = values
-      ? values
-          .flat()
-          .map((email) => String(email).trim().toLowerCase())
-          .filter(Boolean)
-      : [];
+    const users = parseAuthorizedSheetRows(res.data.values);
 
-    emailCache = { emails, expiresAt: now + ttl };
-    return emails;
+    emailCache = { users, expiresAt: now + ttl };
+    return users;
   } catch (err) {
     console.error("Error fetching authorized emails:", err);
     return [];
   }
+}
+
+export async function getAuthorizedEmails(): Promise<string[]> {
+  const users = await getAuthorizedUsers();
+  return users.map((user) => user.email);
 }
 
 
