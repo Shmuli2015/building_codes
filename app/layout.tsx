@@ -70,6 +70,7 @@ export default function RootLayout({
       lang="he"
       dir="rtl"
       className={`${noto.variable} ${heebo.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="flex min-h-dvh flex-col font-sans text-slate-900 selection:bg-blue-500/18 selection:text-slate-900">
         <ContactWhatsAppBanner />
