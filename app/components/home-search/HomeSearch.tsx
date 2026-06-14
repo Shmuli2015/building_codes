@@ -33,7 +33,7 @@ const AddCodeModal = dynamic(
   { ssr: false },
 );
 
-export default function HomeSearch({ initial, addCodePassword }: HomeSearchProps) {
+export default function HomeSearch({ initial, addCodeEnabled }: HomeSearchProps) {
   const reduceMotion = useReducedMotion();
   const [street, setStreet] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
@@ -46,7 +46,6 @@ export default function HomeSearch({ initial, addCodePassword }: HomeSearchProps
   const [lastFetch, setLastFetch] = useState<string | null>(initial.fetchedAt);
   const [resultModalOpen, setResultModalOpen] = useState(false);
   const [addCodeModalOpen, setAddCodeModalOpen] = useState(false);
-  const [initialPasswordVerified, setInitialPasswordVerified] = useState(false);
   const [matches, setMatches] = useState<BuildingCodeRow[]>([]);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [copiedRowKey, setCopiedRowKey] = useState<string | null>(null);
@@ -138,33 +137,6 @@ export default function HomeSearch({ initial, addCodePassword }: HomeSearchProps
     };
   }, [resultModalOpen, closeModal]);
 
-  useEffect(() => {
-    if (!addCodePassword) return;
-    let buffer = "";
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) {
-        return;
-      }
-
-      if (e.key.length === 1) {
-        buffer += e.key;
-        if (buffer.length > addCodePassword.length) {
-          buffer = buffer.slice(-addCodePassword.length);
-        }
-        if (buffer === addCodePassword) {
-          buffer = "";
-          setInitialPasswordVerified(true);
-          setAddCodeModalOpen(true);
-        }
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [addCodePassword]);
-
   const handleClear = useCallback(() => {
     setStreet("");
     setHouseNumber("");
@@ -227,11 +199,8 @@ export default function HomeSearch({ initial, addCodePassword }: HomeSearchProps
                 onRefresh={() => void load(true)}
                 lastFetch={lastFetch}
                 onAddCodeClick={
-                  addCodePassword
-                    ? () => {
-                        setInitialPasswordVerified(false);
-                        setAddCodeModalOpen(true);
-                      }
+                  addCodeEnabled
+                    ? () => setAddCodeModalOpen(true)
                     : undefined
                 }
               />
@@ -278,11 +247,10 @@ export default function HomeSearch({ initial, addCodePassword }: HomeSearchProps
           <AddCodeModal
             open={addCodeModalOpen}
             onClose={() => setAddCodeModalOpen(false)}
-            addCodePassword={addCodePassword}
+            addCodeEnabled={addCodeEnabled}
             availableStreets={availableStreets}
             availableAreas={availableAreas}
             onSuccess={() => void load(true)}
-            initialPasswordVerified={initialPasswordVerified}
           />
         </div>
       </div>

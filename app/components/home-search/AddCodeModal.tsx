@@ -5,28 +5,26 @@ import { AnimatePresence, m, useReducedMotion } from "framer-motion";
 import { CloseIcon } from "./icons";
 import { AutocompleteInput } from "./AutocompleteInput";
 import { capDatalistOptions } from "@/lib/search-index";
-import { addBuildingCode } from "@/lib/sheet-actions";
+import { addBuildingCode, verifyAddCodePassword } from "@/lib/sheet-actions";
 import { ADDRESS_INPUT_CLASS } from "./constants";
 import { springSnappy } from "./motion-config";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  addCodePassword?: string;
+  addCodeEnabled?: boolean;
   availableStreets?: string[];
   availableAreas?: string[];
   onSuccess: () => void;
-  initialPasswordVerified?: boolean;
 };
 
 export function AddCodeModal({
   open,
   onClose,
-  addCodePassword,
+  addCodeEnabled,
   availableStreets = [],
   availableAreas = [],
   onSuccess,
-  initialPasswordVerified = false,
 }: Props) {
   const reduceMotion = useReducedMotion();
   const [area, setArea] = useState("");
@@ -41,6 +39,7 @@ export function AddCodeModal({
   const [enteredPassword, setEnteredPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [verifyingPassword, setVerifyingPassword] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,27 +70,38 @@ export function AddCodeModal({
       setNote("");
       setError(null);
       setSuccess(false);
-      setPasswordVerified(initialPasswordVerified);
+      setPasswordVerified(false);
       setEnteredPassword("");
       setShowPassword(false);
       setPasswordError(null);
+      setVerifyingPassword(false);
       closeButtonRef.current?.focus();
     }
-  }, [open, initialPasswordVerified]);
+  }, [open]);
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (enteredPassword === addCodePassword) {
-      setPasswordVerified(true);
-      setPasswordError(null);
-    } else {
-      setPasswordError("קוד אבטחה שגוי. נא לנסות שוב.");
+    setVerifyingPassword(true);
+    setPasswordError(null);
+
+    try {
+      const result = await verifyAddCodePassword(enteredPassword);
+      if (result.verified) {
+        setPasswordVerified(true);
+        setPasswordError(null);
+      } else {
+        setPasswordError(result.error ?? "קוד אבטחה שגוי. נא לנסות שוב.");
+      }
+    } catch {
+      setPasswordError("שגיאת תקשורת. נא לנסות שוב.");
+    } finally {
+      setVerifyingPassword(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!addCodePassword) return;
+    if (!addCodeEnabled) return;
 
     if (!street.trim() || !houseNumber.trim() || !code.trim()) {
       setError("נא למלא את כל שדות החובה (רחוב, מספר בית וקוד).");
@@ -104,7 +114,7 @@ export function AddCodeModal({
     const finalKind = selectedKind === "אחר" ? (customKind.trim() || "אחר") : selectedKind;
 
     try {
-      const result = await addBuildingCode(addCodePassword, {
+      const result = await addBuildingCode(enteredPassword, {
         area: area.trim(),
         street: street.trim(),
         number: houseNumber.trim(),
@@ -254,12 +264,13 @@ export function AddCodeModal({
                 <div className="mt-6">
                   <m.button
                     type="submit"
-                    whileHover={reduceMotion ? undefined : { scale: 1.01 }}
-                    whileTap={reduceMotion ? undefined : { scale: 0.99 }}
+                    disabled={verifyingPassword}
+                    whileHover={reduceMotion || verifyingPassword ? undefined : { scale: 1.01 }}
+                    whileTap={reduceMotion || verifyingPassword ? undefined : { scale: 0.99 }}
                     transition={{ type: "spring", stiffness: 500, damping: 28 }}
-                    className="relative min-h-12 w-full overflow-hidden rounded-2xl bg-linear-to-l from-blue-600 via-indigo-600 to-blue-700 px-5 py-3 text-base font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.2)_inset,0_12px_36px_-12px_rgba(37,99,235,0.45)] ring-1 ring-white/25 outline-none hover:brightness-[1.04] active:brightness-[0.97]"
+                    className="relative min-h-12 w-full overflow-hidden rounded-2xl bg-linear-to-l from-blue-600 via-indigo-600 to-blue-700 px-5 py-3 text-base font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.2)_inset,0_12px_36px_-12px_rgba(37,99,235,0.45)] ring-1 ring-white/25 outline-none hover:brightness-[1.04] active:brightness-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    המשך
+                    {verifyingPassword ? "מאמת..." : "המשך"}
                   </m.button>
                 </div>
               </form>

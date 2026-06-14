@@ -9,17 +9,36 @@ import path from "path";
 
 const CACHE_FILE_PATH = path.join(process.cwd(), ".next", "google-sheet-cache.json");
 
+function checkAddCodePassword(passwordAttempt: string): { ok: true } | { ok: false; error: string } {
+  const secretCode = process.env.ADD_CODE_PASSWORD;
+  if (!secretCode) {
+    return { ok: false, error: "לא מוגדר קוד אבטחה להוספת קודים בשרת." };
+  }
+
+  if (passwordAttempt !== secretCode) {
+    return { ok: false, error: "קוד אבטחה שגוי." };
+  }
+
+  return { ok: true };
+}
+
+export async function verifyAddCodePassword(
+  passwordAttempt: string,
+): Promise<{ verified: boolean; error?: string }> {
+  const result = checkAddCodePassword(passwordAttempt);
+  if (!result.ok) {
+    return { verified: false, error: result.error };
+  }
+  return { verified: true };
+}
+
 export async function addBuildingCode(
   passwordAttempt: string,
   rowData: BuildingCodeRow
 ): Promise<{ success: boolean; error?: string }> {
-  const secretCode = process.env.ADD_CODE_PASSWORD;
-  if (!secretCode) {
-    return { success: false, error: "לא מוגדר קוד אבטחה להוספת קודים בשרת." };
-  }
-
-  if (passwordAttempt !== secretCode) {
-    return { success: false, error: "קוד אבטחה שגוי." };
+  const authResult = checkAddCodePassword(passwordAttempt);
+  if (!authResult.ok) {
+    return { success: false, error: authResult.error };
   }
 
   // Validate fields

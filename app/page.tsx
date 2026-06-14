@@ -19,7 +19,7 @@ async function HomeSearchLoader() {
   return (
     <HomeSearch
       initial={initial}
-      addCodePassword={process.env.ADD_CODE_PASSWORD}
+      addCodeEnabled={Boolean(process.env.ADD_CODE_PASSWORD)}
     />
   );
 }

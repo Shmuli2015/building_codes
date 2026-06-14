@@ -18,6 +18,6 @@ export type SearchApiResponse = {
 
 export type HomeSearchProps = {
   initial: CodesClientPayload;
-  addCodePassword?: string;
+  addCodeEnabled?: boolean;
 };
 
