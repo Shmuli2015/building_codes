@@ -37,11 +37,17 @@ export function AutocompleteInput({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const listboxId = useId();
+  const ignoreNextFocus = useRef(false);
 
   // Reset highlighted index when options change or dropdown closes/opens
-  useEffect(() => {
+  const [prevOptions, setPrevOptions] = useState<string[]>(options);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+
+  if (options !== prevOptions || isOpen !== prevIsOpen) {
+    setPrevOptions(options);
+    setPrevIsOpen(isOpen);
     setHighlightedIndex(-1);
-  }, [options, isOpen]);
+  }
 
   // Click outside to close dropdown
   useEffect(() => {
@@ -113,6 +119,7 @@ export function AutocompleteInput({
   const selectOption = (opt: string) => {
     onChange(opt);
     setIsOpen(false);
+    ignoreNextFocus.current = true;
     inputRef.current?.focus();
   };
 
@@ -147,7 +154,13 @@ export function AutocompleteInput({
             onChange(e.target.value);
             setIsOpen(true);
           }}
-          onFocus={() => setIsOpen(true)}
+          onFocus={() => {
+            if (ignoreNextFocus.current) {
+              ignoreNextFocus.current = false;
+              return;
+            }
+            setIsOpen(true);
+          }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className={`${ADDRESS_INPUT_CLASS} pl-10`} // extra left padding for chevron icon
@@ -164,7 +177,11 @@ export function AutocompleteInput({
         <button
           type="button"
           onClick={() => {
-            setIsOpen(!isOpen);
+            const nextOpen = !isOpen;
+            if (!nextOpen) {
+              ignoreNextFocus.current = true;
+            }
+            setIsOpen(nextOpen);
             inputRef.current?.focus();
           }}
           className="absolute left-3 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors"

@@ -1,5 +1,7 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { google } from "googleapis";
+import fs from "fs";
+import path from "path";
 
 import {
   type BuildingCodeRow,
@@ -36,7 +38,7 @@ export type CachedCodesPayload = {
   cacheHit: boolean;
 };
 
-async function fetchFromGoogleSheets(): Promise<{
+async function fetchFromGoogleSheetsRaw(): Promise<{
   rows: BuildingCodeRow[];
   warnings: string[];
   source: "sheet" | "mock";
@@ -84,7 +86,84 @@ async function fetchFromGoogleSheets(): Promise<{
   };
 }
 
-async function getCachedSheetData(): Promise<{
+const CACHE_FILE_PATH = path.join(process.cwd(), ".next", "google-sheet-cache.json");
+
+interface FileCacheEntry {
+  rows: BuildingCodeRow[];
+  warnings: string[];
+  source: "sheet" | "mock";
+  timestamp: number;
+}
+
+async function fetchFromGoogleSheets(bypassCache = false): Promise<{
+  rows: BuildingCodeRow[];
+  warnings: string[];
+  source: "sheet" | "mock";
+}> {
+  const ttl = ttlMs();
+  const now = Date.now();
+
+  if (!bypassCache) {
+    try {
+      if (fs.existsSync(CACHE_FILE_PATH)) {
+        const fileContent = fs.readFileSync(CACHE_FILE_PATH, "utf8");
+        const entry = JSON.parse(fileContent) as FileCacheEntry;
+        if (now - entry.timestamp < ttl) {
+          return {
+            rows: entry.rows,
+            warnings: entry.warnings,
+            source: entry.source,
+          };
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to read filesystem cache:", err);
+    }
+  }
+
+  // Fetch fresh data
+  try {
+    const fresh = await fetchFromGoogleSheetsRaw();
+    
+    // Save to cache file
+    try {
+      fs.mkdirSync(path.dirname(CACHE_FILE_PATH), { recursive: true });
+      fs.writeFileSync(
+        CACHE_FILE_PATH,
+        JSON.stringify({
+          rows: fresh.rows,
+          warnings: fresh.warnings,
+          source: fresh.source,
+          timestamp: now,
+        } as FileCacheEntry),
+        "utf8"
+      );
+    } catch (err) {
+      console.warn("Failed to write filesystem cache:", err);
+    }
+
+    return fresh;
+  } catch (err) {
+    // If fetching failed, try to fallback to expired cache if available
+    try {
+      if (fs.existsSync(CACHE_FILE_PATH)) {
+        const fileContent = fs.readFileSync(CACHE_FILE_PATH, "utf8");
+        const entry = JSON.parse(fileContent) as FileCacheEntry;
+        console.warn("Using expired cache as fallback due to fetch error:", err);
+        return {
+          rows: entry.rows,
+          warnings: [...entry.warnings, "שימוש בנתונים שמורים עקב שגיאה בעדכון."],
+          source: entry.source,
+        };
+      }
+    } catch {
+      // ignore
+    }
+    throw err;
+  }
+}
+
+async function getCachedSheetData(bypassCache = false): Promise<{
   rows: BuildingCodeRow[];
   index: SearchIndex;
   warnings: string[];
@@ -94,7 +173,7 @@ async function getCachedSheetData(): Promise<{
   cacheTag("codes");
   cacheLife("minutes");
 
-  const fresh = await fetchFromGoogleSheets();
+  const fresh = await fetchFromGoogleSheets(bypassCache);
   const index = buildSearchIndex(fresh.rows);
   return {
     ...fresh,
@@ -191,7 +270,7 @@ export async function getCodes(options: {
     };
   }
 
-  const fresh = await getCachedSheetData();
+  const fresh = await getCachedSheetData(options.bypassCache ?? false);
   cache = {
     rows: fresh.rows,
     index: fresh.index,
