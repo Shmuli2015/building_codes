@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { buildSearchIndex, filterRowsWithIndex } from "@/lib/search-index";
+import { filterRowsWithIndex } from "@/lib/search-index";
 import { getCodes } from "@/lib/sheet-cache";
 
 export async function GET(request: NextRequest) {
@@ -17,10 +17,9 @@ export async function GET(request: NextRequest) {
 
   try {
     const payload = await getCodes({ bypassCache: false });
-    const index = buildSearchIndex(payload.rows);
     const matches = filterRowsWithIndex(
       payload.rows,
-      index,
+      payload.index,
       street,
       number,
       area,

@@ -6,12 +6,14 @@ import {
   SAMPLE_ROWS,
   parseSheetGrid,
 } from "./building-codes";
+import { buildSearchIndex, type SearchIndex } from "./search-index";
 
 const DEFAULT_RANGE = "גיליון1!A:F";
 const DEFAULT_TTL_MS = 180_000;
 
 type CacheEntry = {
   rows: BuildingCodeRow[];
+  index: SearchIndex;
   warnings: string[];
   expiresAt: number;
   source: "sheet" | "mock";
@@ -27,6 +29,7 @@ function ttlMs(): number {
 
 export type CachedCodesPayload = {
   rows: BuildingCodeRow[];
+  index: SearchIndex;
   warnings: string[];
   source: "sheet" | "mock";
   cacheExpiresAt: number;
@@ -83,6 +86,7 @@ async function fetchFromGoogleSheets(): Promise<{
 
 async function getCachedSheetData(): Promise<{
   rows: BuildingCodeRow[];
+  index: SearchIndex;
   warnings: string[];
   source: "sheet" | "mock";
 }> {
@@ -90,7 +94,12 @@ async function getCachedSheetData(): Promise<{
   cacheTag("codes");
   cacheLife("minutes");
 
-  return fetchFromGoogleSheets();
+  const fresh = await fetchFromGoogleSheets();
+  const index = buildSearchIndex(fresh.rows);
+  return {
+    ...fresh,
+    index,
+  };
 }
 
 type EmailCacheEntry = {
@@ -174,6 +183,7 @@ export async function getCodes(options: {
   if (!options.bypassCache && cache && cache.expiresAt > now) {
     return {
       rows: cache.rows,
+      index: cache.index,
       warnings: cache.warnings,
       source: cache.source,
       cacheExpiresAt: cache.expiresAt,
@@ -184,6 +194,7 @@ export async function getCodes(options: {
   const fresh = await getCachedSheetData();
   cache = {
     rows: fresh.rows,
+    index: fresh.index,
     warnings: fresh.warnings,
     source: fresh.source,
     expiresAt: now + ttl,
@@ -191,6 +202,7 @@ export async function getCodes(options: {
 
   return {
     rows: cache.rows,
+    index: cache.index,
     warnings: cache.warnings,
     source: cache.source,
     cacheExpiresAt: cache.expiresAt,

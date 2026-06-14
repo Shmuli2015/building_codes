@@ -1,6 +1,6 @@
-﻿import { Suspense } from "react";
+import { Suspense } from "react";
 
-import { buildSearchIndex } from "@/lib/search-index";
+
 import { getCodes } from "@/lib/sheet-cache";
 
 import HomeSearch from "./components/HomeSearch";
@@ -8,7 +8,7 @@ import HomeSearch from "./components/HomeSearch";
 async function HomeSearchLoader() {
   const data = await getCodes({ bypassCache: false });
   const initial = {
-    index: buildSearchIndex(data.rows),
+    index: data.index,
     warnings: data.warnings,
     source: data.source,
     cacheExpiresAt: data.cacheExpiresAt,

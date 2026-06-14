@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { buildSearchIndex } from "@/lib/search-index";
+
 import { getCodes } from "@/lib/sheet-cache";
 
 function cacheControlHeader(): string {
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const payload = await getCodes({ bypassCache: refresh });
     return NextResponse.json(
       {
-        index: buildSearchIndex(payload.rows),
+        index: payload.index,
         warnings: payload.warnings,
         source: payload.source,
         cacheExpiresAt: payload.cacheExpiresAt,
