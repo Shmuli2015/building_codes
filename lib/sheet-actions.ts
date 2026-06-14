@@ -11,8 +11,8 @@ import {
   buildAuthSheetRow,
   getEmailFromAuthRow,
   normalizeAuthSheetRow,
-  type AuthorizedUser,
 } from "./sheet-cache";
+import type { AuthorizedUser } from "./auth-types";
 import { parseSheetGrid, type BuildingCodeRow } from "./building-codes";
 import { getSession } from "./auth-actions";
 import { normalizeText, normalizeHouseNumber } from "./normalize";

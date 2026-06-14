@@ -9,7 +9,7 @@ import {
   removeAuthorizedEmail,
   verifyAddAuthorizedPassword,
 } from "@/lib/sheet-actions";
-import type { AuthorizedUser } from "@/lib/sheet-cache";
+import type { AuthorizedUser } from "@/lib/auth-types";
 import { ADDRESS_INPUT_CLASS } from "./constants";
 import { springSnappy } from "./motion-config";
 import { DeleteAuthorizedConfirmModal } from "./DeleteAuthorizedConfirmModal";

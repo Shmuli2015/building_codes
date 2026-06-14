@@ -14,10 +14,9 @@ const DEFAULT_RANGE = "גיליון1!A:F";
 const DEFAULT_AUTH_RANGE = "מורשים!A:B";
 const DEFAULT_TTL_MS = 180_000;
 
-export type AuthorizedUser = {
-  email: string;
-  name: string;
-};
+import type { AuthorizedUser } from "./auth-types";
+
+export type { AuthorizedUser };
 
 export type AuthColumnLayout = {
   emailCol: number;
