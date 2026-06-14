@@ -16,6 +16,15 @@ export function LogoutConfirmModal({ open, onClose, onConfirm }: Props) {
 
   useEffect(() => setMounted(true), []);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   if (!mounted) return null;
 
   return createPortal(
