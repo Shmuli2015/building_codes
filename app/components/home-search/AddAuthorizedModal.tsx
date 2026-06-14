@@ -193,7 +193,7 @@ export function AddAuthorizedModal({
       {open ? (
         <m.div
           key="add-authorized-overlay"
-          className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-5"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-5"
           role="presentation"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
