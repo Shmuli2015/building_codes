@@ -13,9 +13,10 @@ type Props = {
   loading: boolean;
   onRefresh: () => void;
   lastFetch: string | null;
+  onAddCodeClick?: () => void;
 };
 
-export function SheetToolbar({ loading, onRefresh, lastFetch }: Props) {
+export function SheetToolbar({ loading, onRefresh, lastFetch, onAddCodeClick }: Props) {
   const reduceMotion = useReducedMotion();
   const [relativeTick, setRelativeTick] = useState(0);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
@@ -69,6 +70,20 @@ export function SheetToolbar({ loading, onRefresh, lastFetch }: Props) {
           </m.span>
           {loading ? "טוען…" : "רענון"}
         </m.button>
+
+        {onAddCodeClick && (
+          <m.button
+            type="button"
+            onClick={onAddCodeClick}
+            whileHover={reduceMotion ? undefined : { scale: 1.02 }}
+            whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 420, damping: 28 }}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-blue-100 bg-blue-50/50 px-2.5 py-1.5 text-xs font-medium text-blue-700 shadow-sm backdrop-blur-sm transition-colors hover:border-blue-200 hover:bg-blue-50"
+          >
+            <span className="text-sm font-bold leading-none">+</span>
+            <span>הוספה</span>
+          </m.button>
+        )}
 
         <div
           className="flex min-w-0 items-center gap-1.5 rounded-full border border-slate-200/70 bg-slate-50/80 px-2.5 py-1 text-xs text-slate-600"

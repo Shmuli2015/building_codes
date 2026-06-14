@@ -28,7 +28,12 @@ const ResultModal = dynamic(
   { ssr: false },
 );
 
-export default function HomeSearch({ initial }: HomeSearchProps) {
+const AddCodeModal = dynamic(
+  () => import("./AddCodeModal").then((mod) => ({ default: mod.AddCodeModal })),
+  { ssr: false },
+);
+
+export default function HomeSearch({ initial, addCodePassword }: HomeSearchProps) {
   const reduceMotion = useReducedMotion();
   const [street, setStreet] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
@@ -40,6 +45,8 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [lastFetch, setLastFetch] = useState<string | null>(initial.fetchedAt);
   const [resultModalOpen, setResultModalOpen] = useState(false);
+  const [addCodeModalOpen, setAddCodeModalOpen] = useState(false);
+  const [initialPasswordVerified, setInitialPasswordVerified] = useState(false);
   const [matches, setMatches] = useState<BuildingCodeRow[]>([]);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [copiedRowKey, setCopiedRowKey] = useState<string | null>(null);
@@ -131,6 +138,33 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
     };
   }, [resultModalOpen, closeModal]);
 
+  useEffect(() => {
+    if (!addCodePassword) return;
+    let buffer = "";
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      if (e.key.length === 1) {
+        buffer += e.key;
+        if (buffer.length > addCodePassword.length) {
+          buffer = buffer.slice(-addCodePassword.length);
+        }
+        if (buffer === addCodePassword) {
+          buffer = "";
+          setInitialPasswordVerified(true);
+          setAddCodeModalOpen(true);
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [addCodePassword]);
+
   const handleClear = useCallback(() => {
     setStreet("");
     setHouseNumber("");
@@ -192,6 +226,14 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
                 loading={loading}
                 onRefresh={() => void load(true)}
                 lastFetch={lastFetch}
+                onAddCodeClick={
+                  addCodePassword
+                    ? () => {
+                        setInitialPasswordVerified(false);
+                        setAddCodeModalOpen(true);
+                      }
+                    : undefined
+                }
               />
               <HomeSearchHeader />
             </m.header>
@@ -232,6 +274,15 @@ export default function HomeSearch({ initial }: HomeSearchProps) {
             copiedRowKey={copiedRowKey}
             failedCopyKey={failedCopyKey}
             onCopy={copyCode}
+          />
+          <AddCodeModal
+            open={addCodeModalOpen}
+            onClose={() => setAddCodeModalOpen(false)}
+            addCodePassword={addCodePassword}
+            availableStreets={availableStreets}
+            availableAreas={availableAreas}
+            onSuccess={() => void load(true)}
+            initialPasswordVerified={initialPasswordVerified}
           />
         </div>
       </div>

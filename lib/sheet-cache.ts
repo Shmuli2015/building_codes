@@ -21,7 +21,6 @@ type CacheEntry = {
   source: "sheet" | "mock";
 };
 
-let cache: CacheEntry | null = null;
 
 function ttlMs(): number {
   const raw = process.env.CODES_CACHE_TTL_MS;
@@ -88,6 +87,16 @@ async function fetchFromGoogleSheetsRaw(): Promise<{
 
 const CACHE_FILE_PATH = path.join(process.cwd(), ".next", "google-sheet-cache.json");
 
+export function clearCache() {
+  try {
+    if (fs.existsSync(CACHE_FILE_PATH)) {
+      fs.unlinkSync(CACHE_FILE_PATH);
+    }
+  } catch (err) {
+    console.warn("Failed to delete cache file in clearCache:", err);
+  }
+}
+
 interface FileCacheEntry {
   rows: BuildingCodeRow[];
   warnings: string[];
@@ -99,6 +108,7 @@ async function fetchFromGoogleSheets(bypassCache = false): Promise<{
   rows: BuildingCodeRow[];
   warnings: string[];
   source: "sheet" | "mock";
+  timestamp: number;
 }> {
   const ttl = ttlMs();
   const now = Date.now();
@@ -113,6 +123,7 @@ async function fetchFromGoogleSheets(bypassCache = false): Promise<{
             rows: entry.rows,
             warnings: entry.warnings,
             source: entry.source,
+            timestamp: entry.timestamp,
           };
         }
       }
@@ -139,7 +150,10 @@ async function fetchFromGoogleSheets(bypassCache = false): Promise<{
       console.warn("Failed to write filesystem cache:", err);
     }
 
-    return fresh;
+    return {
+      ...fresh,
+      timestamp: now,
+    };
   } catch (err) {
     try {
       if (fs.existsSync(CACHE_FILE_PATH)) {
@@ -150,6 +164,7 @@ async function fetchFromGoogleSheets(bypassCache = false): Promise<{
           rows: entry.rows,
           warnings: [...entry.warnings, "שימוש בנתונים שמורים עקב שגיאה בעדכון."],
           source: entry.source,
+          timestamp: entry.timestamp,
         };
       }
     } catch {
@@ -248,38 +263,20 @@ export async function getCodes(options: {
   if (options.bypassCache) {
     const { revalidateTag } = await import("next/cache");
     revalidateTag("codes", "max");
-    cache = null;
+    clearCache();
   }
 
   const now = Date.now();
+  const freshData = await fetchFromGoogleSheets(options.bypassCache ?? false);
+  const index = buildSearchIndex(freshData.rows);
   const ttl = ttlMs();
 
-  if (!options.bypassCache && cache && cache.expiresAt > now) {
-    return {
-      rows: cache.rows,
-      index: cache.index,
-      warnings: cache.warnings,
-      source: cache.source,
-      cacheExpiresAt: cache.expiresAt,
-      cacheHit: true,
-    };
-  }
-
-  const fresh = await getCachedSheetData(options.bypassCache ?? false);
-  cache = {
-    rows: fresh.rows,
-    index: fresh.index,
-    warnings: fresh.warnings,
-    source: fresh.source,
-    expiresAt: now + ttl,
-  };
-
   return {
-    rows: cache.rows,
-    index: cache.index,
-    warnings: cache.warnings,
-    source: cache.source,
-    cacheExpiresAt: cache.expiresAt,
-    cacheHit: false,
+    rows: freshData.rows,
+    index,
+    warnings: freshData.warnings,
+    source: freshData.source,
+    cacheExpiresAt: freshData.timestamp + ttl,
+    cacheHit: !options.bypassCache && freshData.timestamp !== now,
   };
 }

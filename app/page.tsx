@@ -16,7 +16,12 @@ async function HomeSearchLoader() {
     fetchedAt: new Date().toISOString(),
   };
 
-  return <HomeSearch initial={initial} />;
+  return (
+    <HomeSearch
+      initial={initial}
+      addCodePassword={process.env.ADD_CODE_PASSWORD}
+    />
+  );
 }
 
 function HomeSearchFallback() {
