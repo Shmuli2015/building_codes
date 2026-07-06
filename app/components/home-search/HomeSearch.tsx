@@ -19,14 +19,25 @@ import { HomeSearchHeader } from "./HomeSearchHeader";
 import { LoadErrorAlert } from "./LoadErrorAlert";
 import { staggerContainer, staggerItem } from "./motion-config";
 import type { ApiResponse, HomeSearchProps, SearchApiResponse } from "./types";
-import { AddAuthorizedModal } from "./AddAuthorizedModal";
-import { AddCodeModal } from "./AddCodeModal";
 import { SearchAddressForm } from "./SearchAddressForm";
 import { SheetToolbar } from "./SheetToolbar";
 import { WarningsBanner } from "./WarningsBanner";
 
 const ResultModal = dynamic(
   () => import("./ResultModal").then((mod) => ({ default: mod.ResultModal })),
+  { ssr: false },
+);
+
+const AddCodeModal = dynamic(
+  () => import("./AddCodeModal").then((mod) => ({ default: mod.AddCodeModal })),
+  { ssr: false },
+);
+
+const AddAuthorizedModal = dynamic(
+  () =>
+    import("./AddAuthorizedModal").then((mod) => ({
+      default: mod.AddAuthorizedModal,
+    })),
   { ssr: false },
 );
 
@@ -62,7 +73,7 @@ export default function HomeSearch({
     setLoadError(null);
     try {
       const url = refresh ? "/api/codes?refresh=1" : "/api/codes";
-      const res = await fetch(url, { cache: "no-store" });
+      const res = await fetch(url, refresh ? { cache: "no-store" } : undefined);
       const data = (await res.json()) as ApiResponse;
       if (!res.ok) {
         setLoadError(data.error ?? "טעינה נכשלה");
