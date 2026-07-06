@@ -5,9 +5,20 @@ import { AnimatePresence, m, useReducedMotion } from "framer-motion";
 import { CloseIcon } from "./icons";
 import { AutocompleteInput } from "./AutocompleteInput";
 import { capDatalistOptions } from "@/lib/search-index";
-import { addBuildingCode, verifyAddCodePassword } from "@/lib/sheet-actions";
+import type { BuildingCodeRow } from "@/lib/building-codes";
+import {
+  addBuildingCode,
+  findAddressMatches,
+  updateBuildingCode,
+  verifyAddCodePassword,
+  type AddressMatch,
+} from "@/lib/sheet-actions";
 import { ADDRESS_INPUT_CLASS } from "./constants";
 import { springSnappy } from "./motion-config";
+import {
+  AddressConflictModal,
+  type ConflictStep,
+} from "./AddressConflictModal";
 
 type Props = {
   open: boolean;
@@ -44,6 +55,13 @@ export function AddCodeModal({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("הקוד נשמר בהצלחה! מרענן נתונים...");
+
+  const [existingMatches, setExistingMatches] = useState<AddressMatch[]>([]);
+  const [conflictOpen, setConflictOpen] = useState(false);
+  const [conflictStep, setConflictStep] = useState<ConflictStep>("choose");
+  const [selectedSheetRowIndex, setSelectedSheetRowIndex] = useState<number | null>(null);
+  const [conflictProcessing, setConflictProcessing] = useState(false);
 
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -70,6 +88,12 @@ export function AddCodeModal({
       setNote("");
       setError(null);
       setSuccess(false);
+      setSuccessMessage("הקוד נשמר בהצלחה! מרענן נתונים...");
+      setExistingMatches([]);
+      setConflictOpen(false);
+      setConflictStep("choose");
+      setSelectedSheetRowIndex(null);
+      setConflictProcessing(false);
       setPasswordVerified(false);
       setEnteredPassword("");
       setShowPassword(false);
@@ -99,6 +123,54 @@ export function AddCodeModal({
     }
   };
 
+  const buildRowData = (): BuildingCodeRow => {
+    const finalKind = selectedKind === "אחר" ? (customKind.trim() || "אחר") : selectedKind;
+    return {
+      area: area.trim(),
+      street: street.trim(),
+      number: houseNumber.trim(),
+      code: code.trim(),
+      kind: finalKind.trim(),
+      note: note.trim(),
+    };
+  };
+
+  const handleSaveSuccess = (message: string) => {
+    setSuccessMessage(message);
+    setSuccess(true);
+    setConflictOpen(false);
+    setTimeout(() => {
+      onSuccess();
+      onClose();
+    }, 1500);
+  };
+
+  const saveNewCode = async () => {
+    const result = await addBuildingCode(enteredPassword, buildRowData());
+    if (result.success) {
+      handleSaveSuccess("הקוד נשמר בהצלחה! מרענן נתונים...");
+    } else {
+      setError(result.error ?? "אירעה שגיאה בשמירת הקוד.");
+      setConflictOpen(false);
+    }
+    return result.success;
+  };
+
+  const saveUpdatedCode = async (sheetRowIndex: number) => {
+    const result = await updateBuildingCode(
+      enteredPassword,
+      sheetRowIndex,
+      buildRowData(),
+    );
+    if (result.success) {
+      handleSaveSuccess("הקוד עודכן בהצלחה! מרענן נתונים...");
+    } else {
+      setError(result.error ?? "אירעה שגיאה בעדכון הקוד.");
+      setConflictOpen(false);
+    }
+    return result.success;
+  };
+
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!addCodeEnabled) return;
@@ -111,33 +183,89 @@ export function AddCodeModal({
     setSubmitting(true);
     setError(null);
 
-    const finalKind = selectedKind === "אחר" ? (customKind.trim() || "אחר") : selectedKind;
-
     try {
-      const result = await addBuildingCode(enteredPassword, {
-        area: area.trim(),
-        street: street.trim(),
-        number: houseNumber.trim(),
-        code: code.trim(),
-        kind: finalKind.trim(),
-        note: note.trim(),
-      });
+      const { matches } = await findAddressMatches(
+        street.trim(),
+        houseNumber.trim(),
+        area.trim() || undefined,
+      );
 
-      if (result.success) {
-        setSuccess(true);
-        setTimeout(() => {
-          onSuccess();
-          onClose();
-        }, 1500);
-      } else {
-        setError(result.error ?? "אירעה שגיאה בשמירת הקוד.");
+      if (matches.length > 0) {
+        setExistingMatches(matches);
+        setConflictStep("choose");
+        setSelectedSheetRowIndex(matches.length === 1 ? matches[0].sheetRowIndex : null);
+        setConflictOpen(true);
+        return;
       }
+
+      await saveNewCode();
     } catch (err) {
       setError("שגיאת תקשורת. נא לנסות שוב.");
       console.error(err);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleChooseAddNew = async () => {
+    setConflictProcessing(true);
+    setError(null);
+    try {
+      await saveNewCode();
+    } catch (err) {
+      setError("שגיאת תקשורת. נא לנסות שוב.");
+      console.error(err);
+    } finally {
+      setConflictProcessing(false);
+      setSubmitting(false);
+    }
+  };
+
+  const handleChooseEdit = () => {
+    if (existingMatches.length === 1) {
+      void (async () => {
+        setConflictProcessing(true);
+        setError(null);
+        try {
+          await saveUpdatedCode(existingMatches[0].sheetRowIndex);
+        } catch (err) {
+          setError("שגיאת תקשורת. נא לנסות שוב.");
+          console.error(err);
+        } finally {
+          setConflictProcessing(false);
+          setSubmitting(false);
+        }
+      })();
+      return;
+    }
+
+    setConflictStep("pickRow");
+    if (selectedSheetRowIndex == null && existingMatches.length > 0) {
+      setSelectedSheetRowIndex(existingMatches[0].sheetRowIndex);
+    }
+  };
+
+  const handleConfirmEdit = async () => {
+    if (selectedSheetRowIndex == null) return;
+
+    setConflictProcessing(true);
+    setError(null);
+    try {
+      await saveUpdatedCode(selectedSheetRowIndex);
+    } catch (err) {
+      setError("שגיאת תקשורת. נא לנסות שוב.");
+      console.error(err);
+    } finally {
+      setConflictProcessing(false);
+      setSubmitting(false);
+    }
+  };
+
+  const handleConflictClose = () => {
+    if (conflictProcessing) return;
+    setConflictOpen(false);
+    setConflictStep("choose");
+    setSubmitting(false);
   };
 
   const backdropTransition = reduceMotion
@@ -287,7 +415,7 @@ export function AddCodeModal({
 
                 {success && (
                   <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 text-center font-medium" role="alert">
-                    הקוד נשמר בהצלחה! מרענן נתונים...
+                    {successMessage}
                   </div>
                 )}
 
@@ -395,6 +523,22 @@ export function AddCodeModal({
           </m.div>
         </m.div>
       ) : null}
+      <AddressConflictModal
+        open={conflictOpen}
+        step={conflictStep}
+        matches={existingMatches}
+        street={street.trim()}
+        houseNumber={houseNumber.trim()}
+        area={area.trim() || undefined}
+        selectedSheetRowIndex={selectedSheetRowIndex}
+        processing={conflictProcessing}
+        onClose={handleConflictClose}
+        onChooseEdit={handleChooseEdit}
+        onChooseAddNew={() => void handleChooseAddNew()}
+        onSelectRow={setSelectedSheetRowIndex}
+        onConfirmEdit={() => void handleConfirmEdit()}
+        onBack={() => setConflictStep("choose")}
+      />
     </AnimatePresence>
   );
 }
