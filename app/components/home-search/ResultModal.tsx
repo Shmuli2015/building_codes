@@ -1,12 +1,13 @@
 "use client";
 
 import type { RefObject } from "react";
-
 import { AnimatePresence, m, useReducedMotion } from "framer-motion";
 import type { BuildingCodeRow } from "@/lib/building-codes";
-
+import { normalizeHouseNumber, normalizeText } from "@/lib/normalize";
 import { CloseIcon } from "./icons";
 import { ResultMatchCard } from "./ResultMatchCard";
+import { ResultAddressBanner } from "./ResultAddressBanner";
+import { formatAddress } from "./helpers/formatAddress";
 import { springSnappy } from "./motion-config";
 
 type Props = {
@@ -38,9 +39,18 @@ export function ResultModal({
     ? { duration: 0.15 }
     : { duration: 0.28, ease: [0.32, 0.72, 0, 1] as const };
 
-  const panelTransition = reduceMotion
-    ? { duration: 0.18 }
-    : springSnappy;
+  const panelTransition = reduceMotion ? { duration: 0.18 } : springSnappy;
+
+  const firstMatch = matches[0];
+  const allSameAddress =
+    matches.length > 1 &&
+    Boolean(firstMatch) &&
+    matches.every(
+      (m) =>
+        normalizeText(m.street) === normalizeText(firstMatch.street) &&
+        normalizeHouseNumber(m.number) ===
+          normalizeHouseNumber(firstMatch.number),
+    );
 
   return (
     <AnimatePresence mode="wait">
@@ -94,7 +104,9 @@ export function ResultModal({
                 ref={closeButtonRef}
                 type="button"
                 onClick={onClose}
-                whileHover={reduceMotion ? undefined : { scale: 1.08, rotate: 90 }}
+                whileHover={
+                  reduceMotion ? undefined : { scale: 1.08, rotate: 90 }
+                }
                 whileTap={reduceMotion ? undefined : { scale: 0.92 }}
                 transition={{ type: "spring", stiffness: 450, damping: 22 }}
                 className="rounded-xl p-2.5 text-slate-500 outline-none ring-blue-600/35 transition-colors hover:bg-slate-100 hover:text-slate-800 focus-visible:ring-[3px]"
@@ -124,21 +136,36 @@ export function ResultModal({
                   לא נמצאה התאמה לכתובת זו ברשימה כרגע.
                 </m.p>
               ) : (
-                <ul className="space-y-4">
-                  {matches.map((row, idx) => {
-                    const rowKey = `${row.area}-${row.street}-${row.number}-${row.code}-${idx}`;
-                    return (
-                      <ResultMatchCard
-                        key={rowKey}
-                        row={row}
-                        index={idx}
-                        copied={copiedRowKey === rowKey}
-                        copyFailed={failedCopyKey === rowKey}
-                        onCopy={() => onCopy(row.code, rowKey)}
-                      />
-                    );
-                  })}
-                </ul>
+                <>
+                  {allSameAddress && firstMatch ? (
+                    <ResultAddressBanner
+                      addressText={formatAddress(
+                        firstMatch.street,
+                        firstMatch.number,
+                        firstMatch.area,
+                      )}
+                      count={matches.length}
+                    />
+                  ) : null}
+
+                  <ul className="space-y-3">
+                    {matches.map((row, idx) => {
+                      const rowKey = `${row.area}-${row.street}-${row.number}-${row.code}-${idx}`;
+                      return (
+                        <ResultMatchCard
+                          key={rowKey}
+                          row={row}
+                          index={idx}
+                          totalMatches={matches.length}
+                          hideAddress={allSameAddress}
+                          copied={copiedRowKey === rowKey}
+                          copyFailed={failedCopyKey === rowKey}
+                          onCopy={() => onCopy(row.code, rowKey)}
+                        />
+                      );
+                    })}
+                  </ul>
+                </>
               )}
             </div>
           </m.div>
