@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "קודי בניין — חיפוש קוד כניסה לפי כתובת",
+    name: "קודי בניין - חיפוש קוד כניסה לפי כתובת",
     short_name: "קודי בניין",
     description:
       "חיפוש קוד כניסה לבניין לפי רחוב ומספר בית. ממשק בעברית.",

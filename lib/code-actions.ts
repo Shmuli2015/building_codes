@@ -350,3 +350,87 @@ export async function addBuildingCode(
     return { success: false, error: message };
   }
 }
+
+
+export type CodeWithIndex = BuildingCodeRow & { sheetRowIndex: number };
+
+export async function deleteBuildingCode(
+  passwordAttempt: string,
+  sheetRowIndex: number,
+): Promise<{ success: boolean; error?: string }> {
+  const authResult = checkAddCodePassword(passwordAttempt);
+  if (!authResult.ok) {
+    return { success: false, error: authResult.error };
+  }
+
+  if (sheetRowIndex < 2) {
+    return { success: false, error: "שורה למחיקה אינה תקינה." };
+  }
+
+  const config = getCodesSheetConfig();
+  if ("error" in config) {
+    return { success: false, error: config.error };
+  }
+
+  try {
+    const sheets = await getSheetsClient(config.credentials);
+    const sheetData = await sheets.spreadsheets.values.get({
+      spreadsheetId: config.sheetId,
+      range: config.range,
+    });
+
+    const values = sheetData.data.values || [];
+    if (sheetRowIndex > values.length) {
+      return { success: false, error: "השורה למחיקה לא נמצאה בגיליון." };
+    }
+
+    const nextValues = values.filter((_, idx) => idx !== sheetRowIndex - 1);
+
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId: config.sheetId,
+      range: config.range,
+    });
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: config.sheetId,
+      range: config.range,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: nextValues,
+      },
+    });
+
+    await refreshCodesCache();
+    return { success: true };
+  } catch (err) {
+    console.error("Error deleting row from Google Sheets:", err);
+    const message =
+      err instanceof Error ? err.message : "שגיאה לא ידועה במחיקה מהגיליון";
+    return { success: false, error: message };
+  }
+}
+
+export async function getCodesWithIndices(): Promise<{
+  rows: CodeWithIndex[];
+  warnings: string[];
+}> {
+  const sheetResult = await readSheetRowsWithIndices();
+  if (sheetResult.ok) {
+    return {
+      rows: sheetResult.rows.map((entry) => ({
+        ...entry.row,
+        sheetRowIndex: entry.sheetRowIndex,
+      })),
+      warnings: [],
+    };
+  }
+
+  const payload = await getCodes({ bypassCache: false });
+  return {
+    rows: payload.rows.map((row, idx) => ({
+      ...row,
+      sheetRowIndex: idx + 2,
+    })),
+    warnings: payload.warnings,
+  };
+}

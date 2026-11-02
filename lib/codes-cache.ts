@@ -70,7 +70,7 @@ async function fetchFromGoogleSheetsRaw(): Promise<{
     if (config.error.includes("חסרות")) {
       return {
         rows: SAMPLE_ROWS,
-        warnings: ["מצב הדגמה — מוצגות שורות לדוגמה בלבד."],
+        warnings: ["מצב הדגמה - מוצגות שורות לדוגמה בלבד."],
         source: "mock",
       };
     }

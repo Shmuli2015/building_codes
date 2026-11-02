@@ -30,7 +30,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   ...(siteUrl ? { metadataBase: new URL(siteUrl) } : {}),
   title: {
-    default: "קודי בניין — חיפוש קוד כניסה לפי כתובת",
+    default: "קודי בניין - חיפוש קוד כניסה לפי כתובת",
     template: "%s · קודי בניין",
   },
   description:
@@ -44,13 +44,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "he_IL",
-    title: "קודי בניין — חיפוש קוד כניסה לפי כתובת",
+    title: "קודי בניין - חיפוש קוד כניסה לפי כתובת",
     description:
       "חיפוש קודי כניסה לפי רחוב ומספר בית, ממשק בעברית.",
   },
   twitter: {
     card: "summary",
-    title: "קודי בניין — חיפוש קוד כניסה לפי כתובת",
+    title: "קודי בניין - חיפוש קוד כניסה לפי כתובת",
     description:
       "חיפוש קודי כניסה לפי רחוב ומספר בית, ממשק בעברית.",
   },

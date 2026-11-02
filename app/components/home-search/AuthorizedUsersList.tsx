@@ -56,7 +56,7 @@ export function AuthorizedUsersList({
             >
               <span className="min-w-0 flex-1 text-right">
                 <span className="block truncate font-medium text-slate-900">
-                  {user.name || "—"}
+                  {user.name || "-"}
                 </span>
                 <span
                   className="mt-0.5 block truncate text-xs text-slate-500"

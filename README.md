@@ -37,7 +37,7 @@ The application expects two tabs in the same Google Spreadsheet. Share the sheet
 ### 1. Building Codes (main tab)
 
 - **Tab name:** `גיליון1` (override with `GOOGLE_SHEET_RANGE`, e.g. `Sheet1!A:F`)
-- **Range:** `A:F` — row 1 is headers, data starts at row 2
+- **Range:** `A:F` - row 1 is headers, data starts at row 2
 - **Empty rows** are skipped
 
 | Column | Header (Hebrew) | Header (English) | Field | Required |
@@ -57,13 +57,13 @@ The application expects two tabs in the same Google Spreadsheet. Share the sheet
 | וותיקה | העלייה | 3 | מפתח | 1417 | |
 | וותיקה | ינאי | 3 | קוד | 3131 | |
 
-Header labels are flexible: Hebrew or English aliases are accepted (see `lib/building-codes.ts`). Each logical field is mapped once from the header row — duplicate columns for the same field are ignored.
+Header labels are flexible: Hebrew or English aliases are accepted (see `lib/building-codes.ts`). Each logical field is mapped once from the header row - duplicate columns for the same field are ignored.
 
 ### 2. Authorized Emails (auth tab)
 
 - **Tab name:** `מורשים` (override with `GOOGLE_SHEET_AUTH_RANGE`)
-- **Range:** `A:A` — one authorized email per cell
-- **No header row** — put emails starting at row 1 (every non-empty value in column A is treated as an allowed login email)
+- **Range:** `A:A` - one authorized email per cell
+- **No header row** - put emails starting at row 1 (every non-empty value in column A is treated as an allowed login email)
 
 ## Environment Variables
 

@@ -1,6 +1,7 @@
 "use client";
 
-import { KeyRound, UserPlus } from "lucide-react";
+import Link from "next/link";
+import { KeyRound, List, UserPlus } from "lucide-react";
 import { m, useReducedMotion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -62,7 +63,7 @@ export function SheetToolbar({
   return (
     <div className="flex flex-col gap-2 rounded-xl border border-slate-200/60 bg-white/60 px-2.5 py-2 shadow-[var(--shadow-card)] ring-1 ring-white/50 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-3 sm:py-1.5">
       <div className="flex items-center justify-between gap-2 sm:min-w-0 sm:flex-1 sm:justify-start">
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:flex-nowrap sm:gap-2">
           <m.button
             type="button"
             onClick={onRefresh}
@@ -86,6 +87,16 @@ export function SheetToolbar({
             </m.span>
             <span className="hidden sm:inline">{loading ? "טוען…" : "רענון"}</span>
           </m.button>
+
+          <Link
+            href="/codes"
+            className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-slate-200/90 bg-white/70 px-2 py-1.5 text-xs font-medium text-slate-700 shadow-sm backdrop-blur-sm transition-colors hover:border-slate-300 hover:bg-white sm:gap-1.5 sm:px-2.5"
+            aria-label="כל הקודים"
+          >
+            <List className="h-3.5 w-3.5 shrink-0 text-slate-600" aria-hidden />
+            <span className="sm:hidden">קודים</span>
+            <span className="hidden sm:inline">כל הקודים</span>
+          </Link>
 
           {onAddCodeClick && (
             <m.button
