@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { LazyMotion, domAnimation } from "framer-motion";
 import { BackgroundGlow } from "@/app/components/home-search/BackgroundGlow";
 import { WarningsBanner } from "@/app/components/home-search/WarningsBanner";
 import { AddCodeModal } from "@/app/components/home-search/AddCodeModal";
+import { refreshCodesData } from "@/lib/sheet-actions";
 import type { AllCodesViewProps } from "../types";
 import { useAllCodes } from "../hooks/useAllCodes";
 import { CodesHeader } from "./CodesHeader";
@@ -49,7 +51,23 @@ export function AllCodesView({
     setAdminPassword,
     updateRowInState,
     deleteRowFromState,
+    replaceRows,
   } = useAllCodes(initialRows);
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const data = await refreshCodesData();
+      replaceRows(data.rows);
+      router.refresh();
+    } catch {
+      router.refresh();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const availableStreets = useMemo(
     () =>
@@ -60,82 +78,86 @@ export function AllCodesView({
   );
 
   return (
-    <div className="relative flex w-full flex-1 flex-col overflow-x-clip">
-      <BackgroundGlow />
-      <div className="relative z-1 mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-4 sm:px-6 sm:py-6">
-        <WarningsBanner warnings={warnings} />
+    <LazyMotion features={domAnimation} strict>
+      <div className="relative flex w-full flex-1 flex-col overflow-x-clip">
+        <BackgroundGlow />
+        <div className="relative z-1 mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-4 sm:px-6 sm:py-6">
+          <WarningsBanner warnings={warnings} />
 
-        <CodesHeader
-          totalCount={totalCount}
-          filteredCount={filteredCount}
-          onAddCodeClick={
-            addCodeEnabled ? () => setAddCodeModalOpen(true) : undefined
-          }
-        />
-
-        <div className="relative z-30">
-          <CodesFilterBar
-            searchQuery={searchQuery}
-            selectedArea={selectedArea}
-            selectedKind={selectedKind}
-            sortBy={sortBy}
-            filterOptions={filterOptions}
-            hasActiveFilters={hasActiveFilters}
-            onSearchChange={setSearchQuery}
-            onAreaChange={setSelectedArea}
-            onKindChange={setSelectedKind}
-            onSortChange={setSortBy}
-            onResetFilters={resetFilters}
+          <CodesHeader
+            totalCount={totalCount}
+            filteredCount={filteredCount}
+            onRefresh={handleRefresh}
+            isRefreshing={isRefreshing}
+            onAddCodeClick={
+              addCodeEnabled ? () => setAddCodeModalOpen(true) : undefined
+            }
           />
-        </div>
 
-        <div className="relative z-10">
-          {filteredRows.length === 0 ? (
-            <CodesEmptyState
-              hasFilters={hasActiveFilters}
+          <div className="relative z-30">
+            <CodesFilterBar
+              searchQuery={searchQuery}
+              selectedArea={selectedArea}
+              selectedKind={selectedKind}
+              sortBy={sortBy}
+              filterOptions={filterOptions}
+              hasActiveFilters={hasActiveFilters}
+              onSearchChange={setSearchQuery}
+              onAreaChange={setSelectedArea}
+              onKindChange={setSelectedKind}
+              onSortChange={setSortBy}
               onResetFilters={resetFilters}
             />
-          ) : (
-            <CodesTableView
-              rows={filteredRows}
-              copiedKey={copiedKey}
-              copyFailedKey={copyFailedKey}
-              onCopy={copyCode}
-              onAreaSelect={setSelectedArea}
-              onKindSelect={setSelectedKind}
-              onEdit={setEditingRow}
-              onDelete={setDeletingRow}
-            />
-          )}
+          </div>
+
+          <div className="relative z-10">
+            {filteredRows.length === 0 ? (
+              <CodesEmptyState
+                hasFilters={hasActiveFilters}
+                onResetFilters={resetFilters}
+              />
+            ) : (
+              <CodesTableView
+                rows={filteredRows}
+                copiedKey={copiedKey}
+                copyFailedKey={copyFailedKey}
+                onCopy={copyCode}
+                onAreaSelect={setSelectedArea}
+                onKindSelect={setSelectedKind}
+                onEdit={setEditingRow}
+                onDelete={setDeletingRow}
+              />
+            )}
+          </div>
         </div>
+
+        <AddCodeModal
+          open={addCodeModalOpen}
+          onClose={() => setAddCodeModalOpen(false)}
+          addCodeEnabled={addCodeEnabled}
+          availableStreets={availableStreets}
+          availableAreas={filterOptions.areas}
+          onSuccess={() => {
+            router.refresh();
+          }}
+        />
+
+        <EditCodeModal
+          row={editingRow}
+          adminPassword={adminPassword}
+          onPasswordVerified={setAdminPassword}
+          onSuccess={updateRowInState}
+          onClose={() => setEditingRow(null)}
+        />
+
+        <DeleteCodeModal
+          row={deletingRow}
+          adminPassword={adminPassword}
+          onPasswordVerified={setAdminPassword}
+          onSuccess={deleteRowFromState}
+          onClose={() => setDeletingRow(null)}
+        />
       </div>
-
-      <AddCodeModal
-        open={addCodeModalOpen}
-        onClose={() => setAddCodeModalOpen(false)}
-        addCodeEnabled={addCodeEnabled}
-        availableStreets={availableStreets}
-        availableAreas={filterOptions.areas}
-        onSuccess={() => {
-          router.refresh();
-        }}
-      />
-
-      <EditCodeModal
-        row={editingRow}
-        adminPassword={adminPassword}
-        onPasswordVerified={setAdminPassword}
-        onSuccess={updateRowInState}
-        onClose={() => setEditingRow(null)}
-      />
-
-      <DeleteCodeModal
-        row={deletingRow}
-        adminPassword={adminPassword}
-        onPasswordVerified={setAdminPassword}
-        onSuccess={deleteRowFromState}
-        onClose={() => setDeletingRow(null)}
-      />
-    </div>
+    </LazyMotion>
   );
 }

@@ -73,6 +73,10 @@ export function useAllCodes(initialRows: CodeWithIndex[]) {
     setRows((prev) => prev.filter((r) => r.sheetRowIndex !== sheetRowIndex));
   }, []);
 
+  const replaceRows = useCallback((newRows: CodeWithIndex[]) => {
+    setRows(newRows);
+  }, []);
+
   const hasActiveFilters = Boolean(
     searchQuery.trim() || selectedArea || selectedKind,
   );
@@ -115,5 +119,6 @@ export function useAllCodes(initialRows: CodeWithIndex[]) {
     setAdminPassword,
     updateRowInState,
     deleteRowFromState,
+    replaceRows,
   };
 }

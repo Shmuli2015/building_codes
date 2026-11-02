@@ -434,3 +434,11 @@ export async function getCodesWithIndices(): Promise<{
     warnings: payload.warnings,
   };
 }
+
+export async function refreshCodesData(): Promise<{
+  rows: CodeWithIndex[];
+  warnings: string[];
+}> {
+  clearCache();
+  return await getCodesWithIndices();
+}
