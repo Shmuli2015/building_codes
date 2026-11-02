@@ -1,19 +1,29 @@
 "use server";
 
+import crypto from "crypto";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
-import { getAuthorizedEmails } from "./sheet-cache";
 import { redirect } from "next/navigation";
+import { getAuthorizedEmails } from "./sheet-cache";
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "";
 if (!ADMIN_PASSWORD) {
   throw new Error("Missing ADMIN_PASSWORD environment variable");
 }
 
-const SECRET = new TextEncoder().encode(ADMIN_PASSWORD);
-
+const AUTH_SECRET = process.env.AUTH_SECRET || ADMIN_PASSWORD;
+const SECRET = new TextEncoder().encode(AUTH_SECRET);
 
 const COOKIE_NAME = "auth_session";
+
+function isPasswordValid(attempt: string, expected: string): boolean {
+  const attemptBuffer = Buffer.from(attempt);
+  const expectedBuffer = Buffer.from(expected);
+  if (attemptBuffer.length !== expectedBuffer.length) {
+    return false;
+  }
+  return crypto.timingSafeEqual(attemptBuffer, expectedBuffer);
+}
 
 export async function login(formData: FormData) {
   const email = formData.get("email")?.toString().trim().toLowerCase();
@@ -23,25 +33,20 @@ export async function login(formData: FormData) {
     return { error: "יש להזין אימייל וסיסמה" };
   }
 
-
-  if (password !== ADMIN_PASSWORD) {
-
+  if (!isPasswordValid(password, ADMIN_PASSWORD)) {
     return { error: "סיסמה שגויה" };
   }
-
 
   const authorizedEmails = await getAuthorizedEmails();
   if (!authorizedEmails.includes(email)) {
     return { error: "אימייל זה אינו מורשה גישה" };
   }
 
-
   const token = await new SignJWT({ email })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
     .sign(SECRET);
-
 
   const cookieStore = await cookies();
   cookieStore.set(COOKIE_NAME, token, {

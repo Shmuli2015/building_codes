@@ -2,19 +2,16 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-if (!ADMIN_PASSWORD) {
-  throw new Error("Missing ADMIN_PASSWORD environment variable");
+const AUTH_SECRET = process.env.AUTH_SECRET || process.env.ADMIN_PASSWORD;
+if (!AUTH_SECRET) {
+  throw new Error("Missing AUTH_SECRET or ADMIN_PASSWORD environment variable");
 }
 
-const SECRET = new TextEncoder().encode(ADMIN_PASSWORD);
-
-
+const SECRET = new TextEncoder().encode(AUTH_SECRET);
 const COOKIE_NAME = "auth_session";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
 
   if (
     pathname === "/login" ||
@@ -41,7 +38,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-
     "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };
