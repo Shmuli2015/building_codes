@@ -1,4 +1,4 @@
-export {
+﻿export {
   verifyAddCodePassword,
   findAddressMatches,
   updateBuildingCode,
@@ -15,4 +15,5 @@ export {
   listAuthorizedEmails,
   addAuthorizedEmail,
   removeAuthorizedEmail,
+  updateAuthorizedEmail,
 } from "./authorized-actions";

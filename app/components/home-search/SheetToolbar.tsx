@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { KeyRound, List, UserPlus } from "lucide-react";
+import { KeyRound, List, UserPlus, Users } from "lucide-react";
 import { m, useReducedMotion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -96,6 +96,15 @@ export function SheetToolbar({
             <List className="h-3.5 w-3.5 shrink-0 text-slate-600" aria-hidden />
             <span className="sm:hidden">קודים</span>
             <span className="hidden sm:inline">כל הקודים</span>
+          </Link>
+
+          <Link
+            href="/authorized"
+            className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-slate-200/90 bg-white/70 px-2 py-1.5 text-xs font-medium text-slate-700 shadow-sm backdrop-blur-sm transition-colors hover:border-slate-300 hover:bg-white sm:gap-1.5 sm:px-2.5"
+            aria-label="מורשים"
+          >
+            <Users className="h-3.5 w-3.5 shrink-0 text-slate-600" aria-hidden />
+            <span>מורשים</span>
           </Link>
 
           {onAddCodeClick && (

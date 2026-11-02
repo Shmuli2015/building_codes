@@ -68,11 +68,6 @@ export default function HomeSearch({
                     ? () => state.setAddCodeModalOpen(true)
                     : undefined
                 }
-                onAddAuthorizedClick={
-                  addAuthorizedEnabled
-                    ? () => state.setAddAuthorizedModalOpen(true)
-                    : undefined
-                }
               />
               <HomeSearchHeader />
             </m.header>

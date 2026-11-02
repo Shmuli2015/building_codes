@@ -203,3 +203,103 @@ export async function removeAuthorizedEmail(
     return { success: false, error: message };
   }
 }
+
+export async function updateAuthorizedEmail(
+  passwordAttempt: string,
+  originalEmailInput: string,
+  newEmailInput: string,
+  newNameInput: string,
+): Promise<{ success: boolean; error?: string }> {
+  const authResult = checkAddAuthorizedPassword(passwordAttempt);
+  if (!authResult.ok) {
+    return { success: false, error: authResult.error };
+  }
+
+  const originalEmail = originalEmailInput.trim().toLowerCase();
+  const newEmail = newEmailInput.trim().toLowerCase();
+  const newName = newNameInput.trim();
+
+  if (!originalEmail || !isValidEmail(originalEmail)) {
+    return { success: false, error: "כתובת האימייל המקורית אינה תקינה." };
+  }
+  if (!newName) {
+    return { success: false, error: "יש להזין שם." };
+  }
+  if (!newEmail) {
+    return { success: false, error: "יש להזין כתובת אימייל." };
+  }
+  if (!isValidEmail(newEmail)) {
+    return { success: false, error: "כתובת האימייל אינה תקינה." };
+  }
+
+  if (newEmail !== originalEmail) {
+    try {
+      const existing = await getAuthorizedEmails();
+      if (existing.includes(newEmail)) {
+        return { success: false, error: "אימייל זה כבר מורשה במערכת." };
+      }
+    } catch (err) {
+      console.error("Error checking authorized emails:", err);
+      return { success: false, error: "שגיאה בבדיקת רשימת המורשים." };
+    }
+  }
+
+  const config = getAuthSheetConfig();
+  if ("error" in config) {
+    return { success: false, error: config.error };
+  }
+
+  try {
+    const sheets = await getSheetsClient(config.credentials);
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: config.sheetId,
+      range: config.range,
+    });
+
+    const values = res.data.values ?? [];
+    if (values.length === 0) {
+      return { success: false, error: "אימייל זה לא נמצא ברשימת המורשים." };
+    }
+
+    const header = values[0].map((cell) => String(cell).trim());
+    const layout = resolveAuthColumns(header);
+    const dataRows = values.slice(1);
+
+    const rowIndex = dataRows.findIndex(
+      (row) => getEmailFromAuthRow(row, layout) === originalEmail,
+    );
+
+    if (rowIndex === -1) {
+      return { success: false, error: "אימייל זה לא נמצא ברשימת המורשים." };
+    }
+
+    dataRows[rowIndex] = buildAuthSheetRow(newEmail, newName, layout);
+
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId: config.sheetId,
+      range: config.range,
+    });
+
+    const nextValues = [
+      header,
+      ...dataRows.map((row) => normalizeAuthSheetRow(row, layout)),
+    ];
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: config.sheetId,
+      range: config.range,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: nextValues,
+      },
+    });
+
+    clearEmailCache();
+    return { success: true };
+  } catch (err) {
+    console.error("Error updating authorized email in Google Sheets:", err);
+    const message =
+      err instanceof Error ? err.message : "שגיאה לא ידועה בעדכון בגיליון";
+    return { success: false, error: message };
+  }
+}
