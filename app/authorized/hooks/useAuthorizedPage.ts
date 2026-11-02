@@ -1,17 +1,50 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   addAuthorizedEmail,
   listAuthorizedEmails,
   removeAuthorizedEmail,
   updateAuthorizedEmail,
-  verifyAddAuthorizedPassword,
 } from "@/lib/sheet-actions";
 import type { AuthorizedUser } from "../types";
 import { filterAuthorizedUsers } from "../helpers/filterAuthorizedUsers";
 
 const SESSION_KEY = "authorized_access_code";
+
+const subscribers = new Set<() => void>();
+
+function notify() {
+  subscribers.forEach((cb) => cb());
+}
+
+function subscribe(callback: () => void) {
+  subscribers.add(callback);
+  return () => {
+    subscribers.delete(callback);
+  };
+}
+
+function getSavedPassword(): string | null {
+  if (typeof window === "undefined") return null;
+  return sessionStorage.getItem(SESSION_KEY);
+}
+
+function setSavedPassword(val: string | null) {
+  if (typeof window === "undefined") return;
+  if (val) {
+    sessionStorage.setItem(SESSION_KEY, val);
+  } else {
+    sessionStorage.removeItem(SESSION_KEY);
+  }
+  notify();
+}
 
 type Options = {
   currentUserEmail: string | null;
@@ -22,9 +55,15 @@ export function useAuthorizedPage({
   currentUserEmail,
   addAuthorizedEnabled,
 }: Options) {
+  const savedPassword = useSyncExternalStore(
+    subscribe,
+    getSavedPassword,
+    () => null,
+  );
+
   const [passwordVerified, setPasswordVerified] = useState(false);
-  const [enteredPassword, setEnteredPassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
+  const [enteredPassword, setEnteredPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [verifyingPassword, setVerifyingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -48,6 +87,10 @@ export function useAuthorizedPage({
   const [editing, setEditing] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
 
+  const isCheckingSession = Boolean(
+    savedPassword && !passwordVerified && !passwordError,
+  );
+
   const loadUsers = useCallback(async (password: string) => {
     setLoadingList(true);
     setListError(null);
@@ -66,30 +109,31 @@ export function useAuthorizedPage({
   }, []);
 
   useEffect(() => {
-    const saved = sessionStorage.getItem(SESSION_KEY);
-    if (!saved) return;
+    if (!savedPassword || passwordVerified) return;
 
     let isMounted = true;
-    verifyAddAuthorizedPassword(saved)
+    listAuthorizedEmails(savedPassword)
       .then((res) => {
         if (!isMounted) return;
-        if (res.verified) {
-          setCurrentPassword(saved);
+        if (res.success && res.users) {
+          setCurrentPassword(savedPassword);
           setPasswordVerified(true);
-          void loadUsers(saved);
+          setUsers(res.users);
         } else {
-          sessionStorage.removeItem(SESSION_KEY);
+          setSavedPassword(null);
+          setPasswordError("פג תוקף קוד האבטחה. נא להזין שוב.");
         }
       })
       .catch(() => {
         if (!isMounted) return;
-        sessionStorage.removeItem(SESSION_KEY);
+        setSavedPassword(null);
+        setPasswordError("שגיאת תקשורת באימות הקוד.");
       });
 
     return () => {
       isMounted = false;
     };
-  }, [loadUsers]);
+  }, [savedPassword, passwordVerified]);
 
   const handleGateSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -99,12 +143,12 @@ export function useAuthorizedPage({
     setPasswordError(null);
 
     try {
-      const result = await verifyAddAuthorizedPassword(enteredPassword);
-      if (result.verified) {
+      const result = await listAuthorizedEmails(enteredPassword);
+      if (result.success && result.users) {
         setCurrentPassword(enteredPassword);
         setPasswordVerified(true);
-        sessionStorage.setItem(SESSION_KEY, enteredPassword);
-        await loadUsers(enteredPassword);
+        setUsers(result.users);
+        setSavedPassword(enteredPassword);
       } else {
         setPasswordError(result.error ?? "קוד אבטחה שגוי. נא לנסות שוב.");
       }
@@ -205,7 +249,7 @@ export function useAuthorizedPage({
   };
 
   const handleLock = () => {
-    sessionStorage.removeItem(SESSION_KEY);
+    setSavedPassword(null);
     setPasswordVerified(false);
     setCurrentPassword("");
     setEnteredPassword("");
@@ -221,6 +265,7 @@ export function useAuthorizedPage({
   );
 
   return {
+    isCheckingSession,
     passwordVerified,
     enteredPassword,
     setEnteredPassword,

@@ -1,6 +1,7 @@
 "use client";
 
 import { LazyMotion, domAnimation } from "framer-motion";
+import { Loader2 } from "lucide-react";
 import { BackgroundGlow } from "@/app/components/home-search/BackgroundGlow";
 import { DeleteAuthorizedConfirmModal } from "@/app/components/home-search/DeleteAuthorizedConfirmModal";
 import type { AuthorizedPageViewProps } from "../types";
@@ -17,6 +18,7 @@ export function AuthorizedPageView({
   addAuthorizedEnabled,
 }: AuthorizedPageViewProps) {
   const {
+    isCheckingSession,
     passwordVerified,
     enteredPassword,
     setEnteredPassword,
@@ -61,7 +63,16 @@ export function AuthorizedPageView({
       <div className="relative flex w-full flex-1 flex-col overflow-x-clip">
         <BackgroundGlow />
 
-        {!passwordVerified ? (
+        {isCheckingSession ? (
+          <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center px-4 py-16 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-xs ring-1 ring-indigo-100">
+              <Loader2 className="h-6 w-6 animate-spin" aria-hidden />
+            </div>
+            <p className="mt-3 text-xs font-medium text-slate-500 sm:text-sm">
+              מאמת הרשאת גישה...
+            </p>
+          </div>
+        ) : !passwordVerified ? (
           <AuthorizedGate
             enteredPassword={enteredPassword}
             onPasswordChange={setEnteredPassword}
