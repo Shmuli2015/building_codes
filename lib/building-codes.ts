@@ -37,14 +37,14 @@ function normalizeHeaderLabel(raw: string): string {
   return raw.trim().replace(/\s+/g, " ");
 }
 
-function resolveField(header: string): keyof BuildingCodeRow | null {
+export function resolveField(header: string): keyof BuildingCodeRow | null {
   const t = normalizeHeaderLabel(header);
   if (!t) return null;
   const lower = t.toLowerCase();
   return HEADER_TO_FIELD[t] ?? HEADER_TO_FIELD[lower] ?? null;
 }
 
-function emptyRow(): BuildingCodeRow {
+export function emptyRow(): BuildingCodeRow {
   return {
     area: "",
     street: "",
@@ -55,7 +55,47 @@ function emptyRow(): BuildingCodeRow {
   };
 }
 
-export function parseSheetGrid(values: string[][] | null | undefined): ParsedSheetResult {
+export function buildFieldByCol(
+  headerRow: string[],
+): Map<number, keyof BuildingCodeRow> {
+  const fieldByCol = new Map<number, keyof BuildingCodeRow>();
+  headerRow.forEach((cell, colIndex) => {
+    const field = resolveField(cell);
+    if (field && !Array.from(fieldByCol.values()).includes(field)) {
+      fieldByCol.set(colIndex, field);
+    }
+  });
+  return fieldByCol;
+}
+
+export function parseRowFromLine(
+  line: string[],
+  fieldByCol: Map<number, keyof BuildingCodeRow>,
+): BuildingCodeRow {
+  const row = emptyRow();
+  fieldByCol.forEach((field, colIndex) => {
+    const cell = line[colIndex];
+    row[field] = cell == null ? "" : String(cell).trim();
+  });
+  return row;
+}
+
+export function buildRowArray(
+  fieldByCol: Map<number, keyof BuildingCodeRow>,
+  headerLength: number,
+  rowData: BuildingCodeRow,
+): string[] {
+  const newRowArray: string[] = [];
+  for (let i = 0; i < headerLength; i++) {
+    const field = fieldByCol.get(i);
+    newRowArray[i] = field ? (rowData[field] ?? "").trim() : "";
+  }
+  return newRowArray;
+}
+
+export function parseSheetGrid(
+  values: string[][] | null | undefined,
+): ParsedSheetResult {
   const warnings: string[] = [];
   if (!values || values.length === 0) {
     warnings.push("הרשימה ריקה או שאין נתונים זמינים.");
@@ -63,17 +103,12 @@ export function parseSheetGrid(values: string[][] | null | undefined): ParsedShe
   }
 
   const headerRow = values[0] ?? [];
-  const fieldByCol = new Map<number, keyof BuildingCodeRow>();
-
-  headerRow.forEach((cell, colIndex) => {
-    const field = resolveField(cell);
-    if (field && !Array.from(fieldByCol.values()).includes(field)) {
-      fieldByCol.set(colIndex, field);
-    }
-  });
+  const fieldByCol = buildFieldByCol(headerRow);
 
   const required: (keyof BuildingCodeRow)[] = ["street", "number", "code"];
-  const missing = required.filter((k) => !Array.from(fieldByCol.values()).includes(k));
+  const missing = required.filter(
+    (k) => !Array.from(fieldByCol.values()).includes(k),
+  );
   if (missing.length) {
     warnings.push(
       `חסרות עמודות בכותרות: ${missing.join(", ")}. נדרשות לפחות עמודות שממופות ל־כתובת/רחוב, מספר וקוד (למשל: כתובת, מספר, קוד).`,
@@ -84,16 +119,10 @@ export function parseSheetGrid(values: string[][] | null | undefined): ParsedShe
   const rows: BuildingCodeRow[] = [];
   for (let r = 1; r < values.length; r++) {
     const line = values[r] ?? [];
-    const row = emptyRow();
-    fieldByCol.forEach((field, colIndex) => {
-      const cell = line[colIndex];
-      row[field] = cell == null ? "" : String(cell).trim();
-    });
-
+    const row = parseRowFromLine(line, fieldByCol);
     const hasAddress =
       row.street !== "" || row.number !== "" || row.code !== "";
     if (!hasAddress) continue;
-
     rows.push(row);
   }
 

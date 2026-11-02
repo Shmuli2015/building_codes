@@ -1,8 +1,9 @@
 "use client";
 
 import { AnimatePresence, m } from "framer-motion";
-import { useEffect, useRef, useState, useId } from "react";
 import { ADDRESS_INPUT_CLASS } from "./constants";
+import { highlightMatch } from "./helpers/highlightMatch";
+import { useAutocompleteInput } from "./hooks/useAutocompleteInput";
 
 type AutocompleteInputProps = {
   label: string;
@@ -31,161 +32,40 @@ export function AutocompleteInput({
   required = false,
   className = "",
 }: AutocompleteInputProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLUListElement>(null);
-  const listboxId = useId();
-  const ignoreNextFocus = useRef(false);
-
-  const [prevOptions, setPrevOptions] = useState<string[]>(options);
-  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
-
-  if (options !== prevOptions || isOpen !== prevIsOpen) {
-    setPrevOptions(options);
-    setPrevIsOpen(isOpen);
-    setHighlightedIndex(-1);
-  }
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (highlightedIndex >= 0 && listRef.current) {
-      const activeEl = listRef.current.children[highlightedIndex] as HTMLElement;
-      if (activeEl) {
-        activeEl.scrollIntoView({ block: "nearest" });
-      }
-    }
-  }, [highlightedIndex]);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!isOpen) {
-      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-        setIsOpen(true);
-        e.preventDefault();
-      }
-      return;
-    }
-
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        setHighlightedIndex((prev) =>
-          prev + 1 < options.length ? prev + 1 : 0
-        );
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        setHighlightedIndex((prev) =>
-          prev - 1 >= 0 ? prev - 1 : options.length - 1
-        );
-        break;
-      case "Enter":
-        if (highlightedIndex >= 0 && highlightedIndex < options.length) {
-          e.preventDefault();
-          selectOption(options[highlightedIndex]);
-        }
-        break;
-      case "Escape":
-        e.preventDefault();
-        setIsOpen(false);
-        inputRef.current?.blur();
-        break;
-      case "Tab":
-        setIsOpen(false);
-        break;
-    }
-  };
-
-  const selectOption = (opt: string) => {
-    onChange(opt);
-    setIsOpen(false);
-    ignoreNextFocus.current = true;
-    inputRef.current?.focus();
-  };
-
-  const highlightMatch = (text: string, query: string) => {
-    if (!query.trim()) return <span className="text-slate-700">{text}</span>;
-    const index = text.toLowerCase().indexOf(query.toLowerCase());
-    if (index === -1) return <span className="text-slate-700">{text}</span>;
-
-    const before = text.slice(0, index);
-    const match = text.slice(index, index + query.length);
-    const after = text.slice(index + query.length);
-
-    return (
-      <span className="text-slate-700 font-medium">
-        {before}
-        <span className="font-extrabold text-blue-600">{match}</span>
-        {after}
-      </span>
-    );
-  };
+  const ac = useAutocompleteInput({ options, onChange });
 
   return (
     <label className={`flex flex-col gap-2 text-sm relative ${className}`}>
       <span className="font-semibold text-slate-800">{label}</span>
-      <div ref={containerRef} className="relative w-full">
+      <div ref={ac.containerRef} className="relative w-full">
         <input
-          ref={inputRef}
+          ref={ac.inputRef}
           type={type}
           inputMode={inputMode}
           value={value}
-          onChange={(e) => {
-            onChange(e.target.value);
-            setIsOpen(true);
-          }}
-          onFocus={() => {
-            if (ignoreNextFocus.current) {
-              ignoreNextFocus.current = false;
-              return;
-            }
-            setIsOpen(true);
-          }}
-          onKeyDown={handleKeyDown}
+          onChange={(e) => ac.handleValueChange(e.target.value)}
+          onFocus={ac.handleFocus}
+          onKeyDown={ac.handleKeyDown}
           placeholder={placeholder}
           className={`${ADDRESS_INPUT_CLASS} pl-10`}
           dir={dir}
           autoComplete={autoComplete}
           required={required}
           role="combobox"
-          aria-expanded={isOpen}
+          aria-expanded={ac.isOpen}
           aria-autocomplete="list"
-          aria-controls={listboxId}
+          aria-controls={ac.listboxId}
         />
         <button
           type="button"
-          onClick={() => {
-            const nextOpen = !isOpen;
-            if (!nextOpen) {
-              ignoreNextFocus.current = true;
-            }
-            setIsOpen(nextOpen);
-            inputRef.current?.focus();
-          }}
+          onClick={ac.toggleOpen}
           className="absolute left-3 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors"
           tabIndex={-1}
-          aria-label={isOpen ? "סגור אפשרויות" : "פתח אפשרויות"}
+          aria-label={ac.isOpen ? "סגור אפשרויות" : "פתח אפשרויות"}
         >
           <svg
             className={`h-4 w-4 transform transition-transform duration-200 ${
-              isOpen ? "rotate-180" : ""
+              ac.isOpen ? "rotate-180" : ""
             }`}
             viewBox="0 0 24 24"
             fill="none"
@@ -198,10 +78,10 @@ export function AutocompleteInput({
           </svg>
         </button>
         <AnimatePresence>
-          {isOpen && options.length > 0 && (
+          {ac.isOpen && options.length > 0 && (
             <m.ul
-              ref={listRef}
-              id={listboxId}
+              ref={ac.listRef}
+              id={ac.listboxId}
               role="listbox"
               initial={{ opacity: 0, y: -4, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -214,21 +94,21 @@ export function AutocompleteInput({
             >
               {options.map((opt, i) => {
                 const isSelected = value === opt;
-                const isHighlighted = i === highlightedIndex;
+                const isHighlighted = i === ac.highlightedIndex;
 
                 return (
                   <li
                     key={opt}
                     role="option"
                     aria-selected={isSelected}
-                    onClick={() => selectOption(opt)}
-                    onMouseEnter={() => setHighlightedIndex(i)}
+                    onClick={() => ac.selectOption(opt)}
+                    onMouseEnter={() => ac.setHighlightedIndex(i)}
                     className={`cursor-pointer select-none rounded-xl px-3.5 py-2.5 text-right text-sm transition-colors duration-100 ${
                       isSelected
                         ? "bg-blue-50/70 text-blue-700 font-semibold"
                         : isHighlighted
-                        ? "bg-slate-50 text-slate-900"
-                        : "text-slate-700 hover:bg-slate-50/50"
+                          ? "bg-slate-50 text-slate-900"
+                          : "text-slate-700 hover:bg-slate-50/50"
                     }`}
                   >
                     {highlightMatch(opt, value)}

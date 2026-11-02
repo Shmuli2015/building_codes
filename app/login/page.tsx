@@ -1,13 +1,15 @@
+import { Suspense } from "react";
+import { redirect } from "next/navigation";
+
 import LoginForm from "../components/LoginForm";
 import { getSession } from "@/lib/auth-actions";
-import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "התחברות | קודי בניין",
   description: "דף התחברות למערכת קודי בניין למשתמשים מורשים",
 };
 
-export default async function LoginPage() {
+async function LoginGate() {
   const session = await getSession();
   if (session) {
     redirect("/");
@@ -19,5 +21,21 @@ export default async function LoginPage() {
         <LoginForm />
       </div>
     </div>
+  );
+}
+
+function LoginFallback() {
+  return (
+    <div className="flex flex-1 items-center justify-center px-4 py-12 text-sm text-slate-500">
+      טוען…
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFallback />}>
+      <LoginGate />
+    </Suspense>
   );
 }
