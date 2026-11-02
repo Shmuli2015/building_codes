@@ -19,3 +19,11 @@ export type FilterOptions = {
   areas: string[];
   kinds: string[];
 };
+
+export type GroupedAddress = {
+  key: string;
+  street: string;
+  number: string;
+  area: string;
+  codes: CodeWithIndex[];
+};
